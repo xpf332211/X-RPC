@@ -102,4 +102,10 @@ public class nettyTest {
         System.out.println(zipBytes.length + "===>" + bytes.length);
         System.out.println(Arrays.toString(bytes));
     }
+
+    @Test
+    public void testOut() throws UnsupportedEncodingException {
+//        System.setOut(new PrintStream(System.out, true, "UTF-8"));
+        System.out.println("输出");
+    }
 }
