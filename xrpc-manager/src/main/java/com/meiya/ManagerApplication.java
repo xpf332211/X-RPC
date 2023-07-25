@@ -46,6 +46,7 @@ public class ManagerApplication {
         List.of(baseNode, providersNode, consumersNode).forEach(node -> {
             ZookeeperUtil.createNode(zookeeper,node,null,null,null);
         });
+        ZookeeperUtil.closeZookeeper(zookeeper);
 
     }
 }

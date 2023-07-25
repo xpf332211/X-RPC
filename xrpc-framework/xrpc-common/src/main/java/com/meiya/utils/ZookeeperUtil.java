@@ -88,4 +88,19 @@ public class ZookeeperUtil {
         }
         return false;
     }
+
+    /**
+     * 关闭zk
+     * @param zooKeeper zk实例
+     * @return 关闭成功-->true  关闭失败-->false
+     */
+    public static boolean closeZookeeper(ZooKeeper zooKeeper){
+        try {
+            zooKeeper.close();
+            return true;
+        } catch (InterruptedException e) {
+            log.error("zookeeper关闭时发生异常:{}",e.getMessage());
+        }
+        return false;
+    }
 }
