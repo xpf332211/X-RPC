@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>xrpc-demo</artifactId>
+    <packaging>pom</packaging>
     <build>
         <plugins>
             <plugin>
@@ -22,10 +23,23 @@
             </plugin>
         </plugins>
     </build>
+    <modules>
+        <module>xrpc-provider</module>
+        <module>xrpc-api</module>
+        <module>xrpc-consumer</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/io.netty/netty-all -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+    </dependencies>
 
 </project>

@@ -35,9 +35,10 @@ public class Client {
 
         ChannelFuture channelFuture = bootstrap.group(group)
                 .channel(NioSocketChannel.class)
-                .handler(new ChannelInitializer<Channel>() {
+                .handler(new ChannelInitializer<>() {
                     @Override
-                    protected void initChannel(Channel channel) {                        channel.pipeline().addLast(new SimpleChannelInboundHandler<ByteBuf>() {
+                    protected void initChannel(Channel channel) {
+                        channel.pipeline().addLast(new SimpleChannelInboundHandler<ByteBuf>() {
                             @Override
                             protected void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) throws Exception {
                                 System.out.println("客户端接收到消息：" + byteBuf.toString(StandardCharsets.UTF_8));
