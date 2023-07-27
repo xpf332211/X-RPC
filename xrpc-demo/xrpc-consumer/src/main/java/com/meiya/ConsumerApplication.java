@@ -6,8 +6,8 @@ package com.meiya;
 public class ConsumerApplication {
     public static void main(String[] args) {
         //获取一个reference 把配置项封装
-        ReferenceConfig<MessageService> reference = new ReferenceConfig<>();
-        reference.setInterface(MessageService.class);
+        ReferenceConfig<MessageService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setInterface(MessageService.class);
 
         /**
          * 代理做了什么？
@@ -19,10 +19,10 @@ public class ConsumerApplication {
         XrpcBootstrap.getInstance()
                 .application("first-consumer")
                 .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .reference(reference);
+                .reference(referenceConfig);
 
         //获取代理对象
-        MessageService messageService = reference.get();
+        MessageService messageService = referenceConfig.get();
         String message = messageService.getMessage("Jerry");
     }
 }

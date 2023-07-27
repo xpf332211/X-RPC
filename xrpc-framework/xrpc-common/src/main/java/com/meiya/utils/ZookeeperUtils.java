@@ -8,7 +8,7 @@ import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.ACL;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -16,7 +16,7 @@ import java.util.concurrent.CountDownLatch;
  * @author xiaopf
  */
 @Slf4j
-public class ZookeeperUtil {
+public class ZookeeperUtils {
 
     /**
      * 创建zk实例
@@ -40,7 +40,7 @@ public class ZookeeperUtil {
             return zooKeeper;
         } catch (IOException e) {
             log.error("创建zookeeper实例时发生异常：{}", e.getMessage());
-            throw new ZookeeperException();
+            throw new ZookeeperException(e);
         }
     }
 
@@ -54,6 +54,16 @@ public class ZookeeperUtil {
         int sessionTimeout = Constant.DEFAULT_ZK_TIMEOUT;
         return createZookeeper(connectString, sessionTimeout);
 
+    }
+
+    /**
+     * 创建带默认参数的zk实例
+     * @param connectString 连接url
+     * @return zk实例
+     */
+    public static ZooKeeper createZookeeper(String connectString){
+        int sessionTimeout = Constant.DEFAULT_ZK_TIMEOUT;
+        return createZookeeper(connectString,sessionTimeout);
     }
 
     /**
@@ -71,11 +81,11 @@ public class ZookeeperUtil {
             acl = ZooDefs.Ids.OPEN_ACL_UNSAFE;
         }
         if (createMode == null) {
-            createMode = CreateMode.CONTAINER;
+            createMode = CreateMode.PERSISTENT;
         }
 
         try {
-            if (zooKeeper.exists(node.getNodePath(), null) == null) {
+            if (zooKeeper.exists(node.getNodePath(), watcher) == null) {
                 String result = zooKeeper.create(node.getNodePath(), node.getData(), acl, createMode);
                 log.info("节点【{}】成功创建！", result);
                 return true;
@@ -84,11 +94,23 @@ public class ZookeeperUtil {
             }
         } catch (KeeperException | InterruptedException e) {
             log.error("创建基础目录时发生异常！");
-            throw new ZookeeperException();
+            throw new ZookeeperException(e);
         }
         return false;
     }
 
+    /**
+     * 创建一个目录节点
+     * @param zooKeeper zk实例
+     * @param node 目录节点
+     * @param watcher watcher
+     * @return
+     */
+    public static boolean createNode(ZooKeeper zooKeeper,ZookeeperNode node,Watcher watcher){
+        ArrayList<ACL> acl = ZooDefs.Ids.OPEN_ACL_UNSAFE;
+        CreateMode createMode = CreateMode.PERSISTENT;
+        return createNode(zooKeeper,node,watcher,acl,createMode);
+    }
     /**
      * 关闭zk
      * @param zooKeeper zk实例
@@ -102,5 +124,37 @@ public class ZookeeperUtil {
             log.error("zookeeper关闭时发生异常:{}",e.getMessage());
         }
         return false;
+    }
+
+    /**
+     * 判断节点是否存在
+     * @param zooKeeper zk实例
+     * @param path 节点路径
+     * @param watcher watcher监视器
+     * @return true-->节点存在 反之
+     */
+    public static boolean exists(ZooKeeper zooKeeper,String path,Watcher watcher) {
+        try {
+            return zooKeeper.exists(path, watcher) != null;
+        } catch (KeeperException | InterruptedException e) {
+            log.error("判断节点【{}】是否存在时发生异常：",path,e);
+            throw  new ZookeeperException(e);
+        }
+    }
+
+    /**
+     * 判断节点是否存在
+     * @param zooKeeper zk实例
+     * @param path 节点路径
+     * @param bool 是否试用默认监视器
+     * @return true-->节点存在 反之
+     */
+    public static boolean exists(ZooKeeper zooKeeper,String path,boolean bool){
+        try {
+            return zooKeeper.exists(path,bool) != null;
+        } catch (KeeperException | InterruptedException e) {
+            log.error("判断节点【{}】是否存在时发生异常：",path,e);
+            throw new ZookeeperException(e);
+        }
     }
 }

@@ -1,6 +1,12 @@
 package com.meiya;
 
+import com.meiya.utils.NetUtils;
+import com.meiya.utils.ZookeeperUtils;
+import com.meiya.utils.zk.ZookeeperNode;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooKeeper;
 
 import java.util.List;
 
@@ -11,9 +17,16 @@ import java.util.List;
 @Slf4j
 public class XrpcBootstrap {
 
-    //XrpcBootstrap是单例 采用饿汉式方法创建
 
-    private static XrpcBootstrap xrpcBootstrap = new XrpcBootstrap();
+    private String applicationName;
+    private RegistryConfig registryConfig;
+    private ProtocolConfig protocolConfig;
+    private ZooKeeper zooKeeper;
+    private int port = 8080;
+
+
+    //XrpcBootstrap是单例 采用饿汉式方法创建
+    private static final XrpcBootstrap xrpcBootstrap = new XrpcBootstrap();
 
     private XrpcBootstrap(){
         //初始化
@@ -30,6 +43,7 @@ public class XrpcBootstrap {
      * @return  当前实例
      */
     public XrpcBootstrap application(String applicationName) {
+        this.applicationName = applicationName;
         return this;
     }
 
@@ -39,6 +53,9 @@ public class XrpcBootstrap {
      * @return 当前实例
      */
     public XrpcBootstrap registry(RegistryConfig registryConfig) {
+        //维护一个zk实例
+        zooKeeper = ZookeeperUtils.createZookeeper();
+        this.registryConfig = registryConfig;
         return this;
     }
 
@@ -48,6 +65,7 @@ public class XrpcBootstrap {
      * @return 当前实例
      */
     public XrpcBootstrap protocol(ProtocolConfig protocolConfig) {
+        this.protocolConfig = protocolConfig;
         return this;
     }
 
@@ -55,7 +73,11 @@ public class XrpcBootstrap {
      * 启动netty服务
      */
     public void start() {
-
+        try {
+            Thread.sleep(10 * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -67,6 +89,30 @@ public class XrpcBootstrap {
      * @return 当前实例
      */
     public XrpcBootstrap publish(ServiceConfig<?> serviceConfig) {
+        if (serviceConfig.getInterface() == null){
+            throw new NullPointerException("请配置需要发布的服务接口");
+        }
+        if (serviceConfig.getRef() == null){
+            throw new NullPointerException("请配置需要发布的服务实现类");
+        }
+        //创建服务对应的根节点 为持久节点
+        String serviceName = serviceConfig.getInterface().getName();
+        String providersPath = Constant.BATH_PROVIDERS_PATH + '/' + serviceName;
+        if (!ZookeeperUtils.exists(zooKeeper,providersPath,null)){
+            ZookeeperNode zookeeperNode = new ZookeeperNode(providersPath,null);
+            ZookeeperUtils.createNode(zooKeeper,zookeeperNode,null);
+        }
+        //创建服务对应的子节点 为临时节点 名称为ip:port
+        //服务提供方的端口先直接定义好 还需要一个获取ip的方法
+        String childServiceName = providersPath + '/' + NetUtils.getIp() + ':' + port;
+        if (!ZookeeperUtils.exists(zooKeeper,childServiceName,null)){
+            ZookeeperNode zookeeperNode = new ZookeeperNode(childServiceName,null);
+            ZookeeperUtils.createNode(zooKeeper,zookeeperNode,event -> {
+                if (event.getType() == Watcher.Event.EventType.NodeDeleted){
+                    log.info("节点【{}】已经被删除",childServiceName);
+                }
+            },null, CreateMode.EPHEMERAL);
+        }
         return this;
     }
 
@@ -83,7 +129,12 @@ public class XrpcBootstrap {
     //----------------------------------consumer相关的api--------------------------------------
 
 
-    public XrpcBootstrap reference(ReferenceConfig<?> reference) {
+    /**
+     * 代理对象配置
+     * @param referenceConfig 代理对象配置
+     * @return 当前实例
+     */
+    public XrpcBootstrap reference(ReferenceConfig<?> referenceConfig) {
 
         return this;
     }
