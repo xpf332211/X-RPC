@@ -27,7 +27,7 @@ public class RegistryConfig {
         };
         String type = getTypeOrHost(connect, true);
         if (!registryMap.containsKey(type)){
-            throw new RegistryException("Î´Æ¥Åäµ½Ö¸¶¨µÄ×¢²áÖĞĞÄ!");
+            throw new RegistryException("æœªåŒ¹é…åˆ°æŒ‡å®šçš„æ³¨å†Œä¸­å¿ƒ!");
         }
         if (Objects.equals(registryMap.get(type), "zookeeper")){
             String host = getTypeOrHost(connect, false);
@@ -36,7 +36,7 @@ public class RegistryConfig {
             String host = getTypeOrHost(connect, false);
             return new NacosRegistry(host,Constant.DEFAULT_ZK_TIMEOUT);
         }else {
-            throw new RegistryException("Î´Æ¥Åäµ½Ö¸¶¨µÄ×¢²áÖĞĞÄ!");
+            throw new RegistryException("æœªåŒ¹é…åˆ°æŒ‡å®šçš„æ³¨å†Œä¸­å¿ƒ!");
         }
 
 
@@ -46,7 +46,7 @@ public class RegistryConfig {
         int splitLen = 2;
         String[] strings = connect.split("://");
         if (strings.length != splitLen){
-            throw new RegistryException("Ìá¹©µÄ×¢²áÖĞĞÄÁ¬½Óurl²»ºÏ·¨£¡");
+            throw new RegistryException("æä¾›çš„æ³¨å†Œä¸­å¿ƒè¿æ¥urlä¸åˆæ³•ï¼");
         }
         if (isType){
             return strings[0].toLowerCase().trim();

@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -22,6 +24,11 @@ public class XrpcBootstrap {
      */
     private Registry registry;
 
+    /**
+     * 服务列表
+     * key--> interface的全限名 value--> ServiceConfig
+     */
+    private static final Map<String,ServiceConfig<?>> SERVICE_MAP = new ConcurrentHashMap<>(16);
     /**
      * XrpcBootstrap是单例 采用饿汉式方法创建
      */
@@ -71,7 +78,10 @@ public class XrpcBootstrap {
      */
     public void start() {
         try {
-            Thread.sleep(10 * 1000);
+            while (true){
+                Thread.sleep(10 * 1000);
+            }
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -86,7 +96,10 @@ public class XrpcBootstrap {
      * @return 当前实例
      */
     public XrpcBootstrap publish(ServiceConfig<?> serviceConfig) {
+        //将服务注册到注册中心上
         registry.register(serviceConfig);
+        //维护服务列表
+        SERVICE_MAP.put(serviceConfig.getInterface().getName(),serviceConfig);
         return this;
     }
 
@@ -98,6 +111,7 @@ public class XrpcBootstrap {
     public XrpcBootstrap publish(List<ServiceConfig<?>> serviceConfigList){
         serviceConfigList.forEach(serviceConfig -> {
             registry.register(serviceConfig);
+            SERVICE_MAP.put(serviceConfig.getInterface().getName(),serviceConfig);
         });
         return this;
     }
@@ -112,7 +126,7 @@ public class XrpcBootstrap {
      * @return 当前实例
      */
     public XrpcBootstrap reference(ReferenceConfig<?> referenceConfig) {
-
+        referenceConfig.setRegistry(registry);
         return this;
     }
 }

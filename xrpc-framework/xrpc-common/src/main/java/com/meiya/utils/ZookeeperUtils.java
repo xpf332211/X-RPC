@@ -1,6 +1,7 @@
 package com.meiya.utils;
 
 import com.meiya.Constant;
+import com.meiya.exceptions.DiscoveryException;
 import com.meiya.exceptions.ZookeeperException;
 import com.meiya.utils.zk.ZookeeperNode;
 import lombok.extern.slf4j.Slf4j;
@@ -19,37 +20,37 @@ import java.util.concurrent.CountDownLatch;
 public class ZookeeperUtils {
 
     /**
-     * ´´½¨zkÊµÀı
-     * @param connectString Á¬½ÓÌ×½Ó×Ö
-     * @param sessionTimeout Á¬½Ó³¬Ê±Ê±¼ä
-     * @return zkÊµÀı
+     * åˆ›å»ºzkå®ä¾‹
+     * @param connectString è¿æ¥å¥—æ¥å­—
+     * @param sessionTimeout è¿æ¥è¶…æ—¶æ—¶é—´
+     * @return zkå®ä¾‹
      */
     public static ZooKeeper createZookeeper(String connectString, int sessionTimeout) {
         ZooKeeper zooKeeper = null;
         CountDownLatch countDownLatch = new CountDownLatch(1);
 
         try {
-            //´´½¨zkÊµÀı£¬½¨Á¢Á¬½Ó
+            //åˆ›å»ºzkå®ä¾‹ï¼Œå»ºç«‹è¿æ¥
             zooKeeper = new ZooKeeper(connectString, sessionTimeout, event -> {
-                //Ö»ÓĞÁ¬½Ó³É¹¦²Å·ÅĞĞ
+                //åªæœ‰è¿æ¥æˆåŠŸæ‰æ”¾è¡Œ
                 if (event.getState() == Watcher.Event.KeeperState.SyncConnected) {
-                    log.info("zookeeperÁ¬½Ó³É¹¦£¡");
+                    log.info("zookeeperè¿æ¥æˆåŠŸï¼");
                     countDownLatch.countDown();
                 }
             });
             return zooKeeper;
         } catch (IOException e) {
-            log.error("´´½¨zookeeperÊµÀıÊ±·¢ÉúÒì³££º{}", e.getMessage());
+            log.error("åˆ›å»ºzookeeperå®ä¾‹æ—¶å‘ç”Ÿå¼‚å¸¸ï¼š{}", e.getMessage());
             throw new ZookeeperException(e);
         }
     }
 
     /**
-     * ´´½¨´øÄ¬ÈÏ²ÎÊıµÄzkÊµÀı
-     * @return zkÊµÀı
+     * åˆ›å»ºå¸¦é»˜è®¤å‚æ•°çš„zkå®ä¾‹
+     * @return zkå®ä¾‹
      */
     public static ZooKeeper createZookeeper() {
-        //¶¨ÒåÄ¬ÈÏÁ¬½Ó²ÎÊı
+        //å®šä¹‰é»˜è®¤è¿æ¥å‚æ•°
         String connectString = Constant.DEFAULT_ZK_CONNECT;
         int sessionTimeout = Constant.DEFAULT_ZK_TIMEOUT;
         return createZookeeper(connectString, sessionTimeout);
@@ -57,9 +58,9 @@ public class ZookeeperUtils {
     }
 
     /**
-     * ´´½¨´øÄ¬ÈÏ²ÎÊıµÄzkÊµÀı
-     * @param connectString Á¬½Óurl
-     * @return zkÊµÀı
+     * åˆ›å»ºå¸¦é»˜è®¤å‚æ•°çš„zkå®ä¾‹
+     * @param connectString è¿æ¥url
+     * @return zkå®ä¾‹
      */
     public static ZooKeeper createZookeeper(String connectString){
         int sessionTimeout = Constant.DEFAULT_ZK_TIMEOUT;
@@ -67,13 +68,13 @@ public class ZookeeperUtils {
     }
 
     /**
-     * ´´½¨Ò»¸öÄ¿Â¼½Úµã
-     * @param zooKeeper zkÊµÀı
-     * @param node Ä¿Â¼½Úµã
+     * åˆ›å»ºä¸€ä¸ªç›®å½•èŠ‚ç‚¹
+     * @param zooKeeper zkå®ä¾‹
+     * @param node ç›®å½•èŠ‚ç‚¹
      * @param watcher watcher
-     * @param acl ¿ØÖÆÈ¨ÏŞ
-     * @param createMode ½ÚµãÀàĞÍ
-     * @return ´´½¨³É¹¦-->true  ´´½¨Ê§°Ü|Å×Òì³£-->false
+     * @param acl æ§åˆ¶æƒé™
+     * @param createMode èŠ‚ç‚¹ç±»å‹
+     * @return åˆ›å»ºæˆåŠŸ-->true  åˆ›å»ºå¤±è´¥|æŠ›å¼‚å¸¸-->false
      */
     public static boolean createNode(ZooKeeper zooKeeper, ZookeeperNode node, Watcher watcher, List<ACL> acl, CreateMode createMode) {
 
@@ -87,22 +88,22 @@ public class ZookeeperUtils {
         try {
             if (zooKeeper.exists(node.getNodePath(), watcher) == null) {
                 String result = zooKeeper.create(node.getNodePath(), node.getData(), acl, createMode);
-                log.info("½Úµã¡¾{}¡¿³É¹¦´´½¨£¡", result);
+                log.info("èŠ‚ç‚¹ã€{}ã€‘æˆåŠŸåˆ›å»ºï¼", result);
                 return true;
             } else {
-                log.info("½Úµã¡¾{}¡¿ÒÑ¾­´æÔÚ£¬ÎŞĞè´´½¨£¡", node.getNodePath());
+                log.info("èŠ‚ç‚¹ã€{}ã€‘å·²ç»å­˜åœ¨ï¼Œæ— éœ€åˆ›å»ºï¼", node.getNodePath());
             }
         } catch (KeeperException | InterruptedException e) {
-            log.error("´´½¨»ù´¡Ä¿Â¼Ê±·¢ÉúÒì³££¡");
+            log.error("åˆ›å»ºåŸºç¡€ç›®å½•æ—¶å‘ç”Ÿå¼‚å¸¸ï¼");
             throw new ZookeeperException(e);
         }
         return false;
     }
 
     /**
-     * ´´½¨Ò»¸öÄ¿Â¼½Úµã
-     * @param zooKeeper zkÊµÀı
-     * @param node Ä¿Â¼½Úµã
+     * åˆ›å»ºä¸€ä¸ªç›®å½•èŠ‚ç‚¹
+     * @param zooKeeper zkå®ä¾‹
+     * @param node ç›®å½•èŠ‚ç‚¹
      * @param watcher watcher
      * @return
      */
@@ -112,49 +113,64 @@ public class ZookeeperUtils {
         return createNode(zooKeeper,node,watcher,acl,createMode);
     }
     /**
-     * ¹Ø±Õzk
-     * @param zooKeeper zkÊµÀı
-     * @return ¹Ø±Õ³É¹¦-->true  ¹Ø±ÕÊ§°Ü-->false
+     * å…³é—­zk
+     * @param zooKeeper zkå®ä¾‹
+     * @return å…³é—­æˆåŠŸ-->true  å…³é—­å¤±è´¥-->false
      */
     public static boolean closeZookeeper(ZooKeeper zooKeeper){
         try {
             zooKeeper.close();
             return true;
         } catch (InterruptedException e) {
-            log.error("zookeeper¹Ø±ÕÊ±·¢ÉúÒì³£:{}",e.getMessage());
+            log.error("zookeeperå…³é—­æ—¶å‘ç”Ÿå¼‚å¸¸:{}",e.getMessage());
         }
         return false;
     }
 
     /**
-     * ÅĞ¶Ï½ÚµãÊÇ·ñ´æÔÚ
-     * @param zooKeeper zkÊµÀı
-     * @param path ½ÚµãÂ·¾¶
-     * @param watcher watcher¼àÊÓÆ÷
-     * @return true-->½Úµã´æÔÚ ·´Ö®
+     * åˆ¤æ–­èŠ‚ç‚¹æ˜¯å¦å­˜åœ¨
+     * @param zooKeeper zkå®ä¾‹
+     * @param path èŠ‚ç‚¹è·¯å¾„
+     * @param watcher watcherç›‘è§†å™¨
+     * @return true-->èŠ‚ç‚¹å­˜åœ¨ åä¹‹
      */
     public static boolean exists(ZooKeeper zooKeeper,String path,Watcher watcher) {
         try {
             return zooKeeper.exists(path, watcher) != null;
         } catch (KeeperException | InterruptedException e) {
-            log.error("ÅĞ¶Ï½Úµã¡¾{}¡¿ÊÇ·ñ´æÔÚÊ±·¢ÉúÒì³££º",path,e);
+            log.error("åˆ¤æ–­èŠ‚ç‚¹ã€{}ã€‘æ˜¯å¦å­˜åœ¨æ—¶å‘ç”Ÿå¼‚å¸¸ï¼š",path,e);
             throw  new ZookeeperException(e);
         }
     }
 
     /**
-     * ÅĞ¶Ï½ÚµãÊÇ·ñ´æÔÚ
-     * @param zooKeeper zkÊµÀı
-     * @param path ½ÚµãÂ·¾¶
-     * @param bool ÊÇ·ñÊÔÓÃÄ¬ÈÏ¼àÊÓÆ÷
-     * @return true-->½Úµã´æÔÚ ·´Ö®
+     * åˆ¤æ–­èŠ‚ç‚¹æ˜¯å¦å­˜åœ¨
+     * @param zooKeeper zkå®ä¾‹
+     * @param path èŠ‚ç‚¹è·¯å¾„
+     * @param bool æ˜¯å¦è¯•ç”¨é»˜è®¤ç›‘è§†å™¨
+     * @return true-->èŠ‚ç‚¹å­˜åœ¨ åä¹‹
      */
     public static boolean exists(ZooKeeper zooKeeper,String path,boolean bool){
         try {
             return zooKeeper.exists(path,bool) != null;
         } catch (KeeperException | InterruptedException e) {
-            log.error("ÅĞ¶Ï½Úµã¡¾{}¡¿ÊÇ·ñ´æÔÚÊ±·¢ÉúÒì³££º",path,e);
+            log.error("åˆ¤æ–­èŠ‚ç‚¹ã€{}ã€‘æ˜¯å¦å­˜åœ¨æ—¶å‘ç”Ÿå¼‚å¸¸ï¼š",path,e);
             throw new ZookeeperException(e);
+        }
+    }
+
+    /**
+     * è·å–æœåŠ¡ä¸‹çš„ip:portèŠ‚ç‚¹
+     * @param zooKeeper zkå®ä¾‹
+     * @param servicePath æœåŠ¡èŠ‚ç‚¹è·¯å¾„
+     * @return å­èŠ‚ç‚¹åˆ—è¡¨
+     */
+    public static List<String> getChildren(ZooKeeper zooKeeper, String servicePath,Watcher watcher) {
+        try {
+            return zooKeeper.getChildren(servicePath,watcher);
+        } catch (KeeperException | InterruptedException e) {
+            log.error("è·å–èŠ‚ç‚¹ã€{}ã€‘çš„å­å…ƒç´ å‘ç”Ÿå¼‚å¸¸ï¼š",servicePath,e);
+            throw new DiscoveryException(e);
         }
     }
 }

@@ -2,13 +2,22 @@ package com.meiya.registry;
 
 import com.meiya.ServiceConfig;
 
+import java.net.InetSocketAddress;
+
 /**
  * @author xiaopf
  */
 public interface Registry {
     /**
-     * ×¢²áÖĞĞÄµÄ×¢²áÊµÀı·½·¨
-     * @param serviceConfig ·şÎñĞÅÏ¢ÅäÖÃ
+     * æ³¨å†Œä¸­å¿ƒçš„æ³¨å†Œå®ä¾‹æ–¹æ³•
+     * @param serviceConfig æœåŠ¡ä¿¡æ¯é…ç½®
      */
     void register(ServiceConfig<?> serviceConfig);
+
+    /**
+     * ä»æ³¨å†Œä¸­å¿ƒæ‹‰å–ä¸€ä¸ªå¯ç”¨çš„æœåŠ¡
+     * @param serviceName æœåŠ¡åç§°
+     * @return æœåŠ¡åœ°å€
+     */
+    InetSocketAddress seek(String serviceName);
 }

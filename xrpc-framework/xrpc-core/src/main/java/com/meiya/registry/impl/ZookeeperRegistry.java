@@ -2,6 +2,7 @@ package com.meiya.registry.impl;
 
 import com.meiya.Constant;
 import com.meiya.ServiceConfig;
+import com.meiya.exceptions.DiscoveryException;
 import com.meiya.registry.AbstractRegistry;
 import com.meiya.registry.Registry;
 import com.meiya.utils.NetUtils;
@@ -11,6 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+
+import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author xiaopf
@@ -30,28 +35,41 @@ public class ZookeeperRegistry extends AbstractRegistry {
     @Override
     public void register(ServiceConfig<?> serviceConfig) {
         if (serviceConfig.getInterface() == null){
-            throw new NullPointerException("ÇëÅäÖÃĞèÒª·¢²¼µÄ·şÎñ½Ó¿Ú");
+            throw new NullPointerException("è¯·é…ç½®éœ€è¦å‘å¸ƒçš„æœåŠ¡æ¥å£");
         }
         if (serviceConfig.getRef() == null){
-            throw new NullPointerException("ÇëÅäÖÃĞèÒª·¢²¼µÄ·şÎñÊµÏÖÀà");
+            throw new NullPointerException("è¯·é…ç½®éœ€è¦å‘å¸ƒçš„æœåŠ¡å®ç°ç±»");
         }
-        //´´½¨·şÎñ¶ÔÓ¦µÄ¸ù½Úµã Îª³Ö¾Ã½Úµã
+        //åˆ›å»ºæœåŠ¡å¯¹åº”çš„æ ¹èŠ‚ç‚¹ ä¸ºæŒä¹…èŠ‚ç‚¹
         String serviceName = serviceConfig.getInterface().getName();
         String providersPath = Constant.BATH_PROVIDERS_PATH + '/' + serviceName;
         if (!ZookeeperUtils.exists(zooKeeper,providersPath,null)){
             ZookeeperNode zookeeperNode = new ZookeeperNode(providersPath,null);
             ZookeeperUtils.createNode(zooKeeper,zookeeperNode,null);
         }
-        //´´½¨·şÎñ¶ÔÓ¦µÄ×Ó½Úµã ÎªÁÙÊ±½Úµã Ãû³ÆÎªip:port
-        //·şÎñÌá¹©·½µÄ¶Ë¿ÚÏÈÖ±½Ó¶¨ÒåºÃ »¹ĞèÒªÒ»¸ö»ñÈ¡ipµÄ·½·¨
+        //åˆ›å»ºæœåŠ¡å¯¹åº”çš„å­èŠ‚ç‚¹ ä¸ºä¸´æ—¶èŠ‚ç‚¹ åç§°ä¸ºip:port
+        //æœåŠ¡æä¾›æ–¹çš„ç«¯å£å…ˆç›´æ¥å®šä¹‰å¥½ è¿˜éœ€è¦ä¸€ä¸ªè·å–ipçš„æ–¹æ³•
         String childServiceName = providersPath + '/' + NetUtils.getIp() + ':' + port;
         if (!ZookeeperUtils.exists(zooKeeper,childServiceName,null)){
             ZookeeperNode zookeeperNode = new ZookeeperNode(childServiceName,null);
-            ZookeeperUtils.createNode(zooKeeper,zookeeperNode,event -> {
-                if (event.getType() == Watcher.Event.EventType.NodeDeleted){
-                    log.info("½Úµã¡¾{}¡¿ÒÑ¾­±»É¾³ı",childServiceName);
-                }
-            },null, CreateMode.EPHEMERAL);
+            ZookeeperUtils.createNode(zooKeeper,zookeeperNode,null,null, CreateMode.EPHEMERAL);
         }
+    }
+
+    @Override
+    public InetSocketAddress seek(String serviceName) {
+        String servicePath = Constant.BATH_PROVIDERS_PATH + '/' + serviceName;
+        //è·å–å­èŠ‚ç‚¹
+        List<String> childrenService = ZookeeperUtils.getChildren(zooKeeper,servicePath,null);
+        List<InetSocketAddress> inetSocketAddressList = childrenService.stream().map(host -> {
+            String[] ipAndPort = host.split(":");
+            String ip = ipAndPort[0];
+            int port = Integer.parseInt(ipAndPort[1]);
+            return new InetSocketAddress(ip,port);
+        }).collect(Collectors.toList());
+        if (inetSocketAddressList.size() == 0){
+            throw new DiscoveryException("æœªè·å–åˆ°å¯ç”¨çš„å­èŠ‚ç‚¹");
+        }
+        return inetSocketAddressList.get(0);
     }
 }

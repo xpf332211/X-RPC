@@ -11,10 +11,7 @@ import java.util.Enumeration;
 @Slf4j
 public class NetUtils {
 
-    /**
-     * 获取本机ip
-     * @return 本机ip
-     */
+
     public static String getIp(){
         try {
             for (Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements(); ) {
@@ -31,7 +28,8 @@ public class NetUtils {
             }
             return InetAddress.getLocalHost().getHostAddress();
         } catch (SocketException | UnknownHostException e) {
-            log.error("获取ip时发生异常",e);
+
+            log.error("鏃犳硶鑾峰彇ip");
             throw new RuntimeException(e);
         }
     }
