@@ -7,4 +7,7 @@ public class ZookeeperException extends RuntimeException{
     public ZookeeperException(Exception e) {
         super(e);
     }
+    public ZookeeperException(String s){
+        super(s);
+    }
 }
