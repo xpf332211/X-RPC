@@ -5,11 +5,11 @@ package com.meiya;
  */
 public class ServiceConfig <T>{
     /**
-     * ·şÎñ½Ó¿Ú
+     * æœåŠ¡æ¥å£
      */
     private Class<T> interfaceServ;
     /**
-     * ·şÎñÊµÏÖÀà
+     * æœåŠ¡å®ç°ç±»
      */
     private Object ref;
 

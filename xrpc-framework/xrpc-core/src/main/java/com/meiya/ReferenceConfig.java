@@ -42,7 +42,7 @@ public class ReferenceConfig<T> {
         //使用动态代理 生成代理对象
         Object proxy = Proxy.newProxyInstance(classLoader, classes, (proxy1, method, args) -> {
             InetSocketAddress address = registry.seek(interfaceRef.getName());
-            System.out.println("引用");
+
             log.info("服务调用方,返回了服务【{}】的可用主机【{}】",interfaceRef.getName(),address);
             return null;
         });
