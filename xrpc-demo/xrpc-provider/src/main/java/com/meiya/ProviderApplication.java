@@ -2,12 +2,21 @@ package com.meiya;
 
 import com.meiya.impl.MessageServiceImpl;
 
+import com.meiya.utils.print.Out;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+
 
 /**
  * @author xiaopf
  */
+@Slf4j
 public class ProviderApplication {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnsupportedEncodingException {
+
 
         //封装要发布的服务
         ServiceConfig<MessageService> messageServiceConfig = new ServiceConfig<>();
@@ -22,5 +31,6 @@ public class ProviderApplication {
                 .protocol(new ProtocolConfig("jdk"))
                 .publish(messageServiceConfig)
                 .start();
+        
     }
 }

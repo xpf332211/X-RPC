@@ -1,5 +1,6 @@
 package com.meiya.netty.demo1;
 
+import com.meiya.utils.print.Out;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -36,7 +37,7 @@ public class Server {
                             @Override
                             public void channelRead(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
                                 String msg = o.toString();
-                                System.out.println("服务端收到消息：" + msg);
+                                Out.println("服务端收到消息：" + msg);
                                 channelHandlerContext.writeAndFlush(Unpooled.copiedBuffer("我是服务端，我已经收到您的消息为" + msg, StandardCharsets.UTF_8));
                             }
                         });

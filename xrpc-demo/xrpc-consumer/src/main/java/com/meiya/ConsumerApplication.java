@@ -1,5 +1,6 @@
 package com.meiya;
 
+import com.meiya.utils.print.Out;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -26,5 +27,6 @@ public class ConsumerApplication {
         //获取代理对象
         MessageService messageService = referenceConfig.get();
         String message = messageService.getMessage("Jerry");
+        Out.println(message);
     }
 }

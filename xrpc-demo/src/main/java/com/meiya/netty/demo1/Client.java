@@ -1,6 +1,7 @@
 package com.meiya.netty.demo1;
 
 
+import com.meiya.utils.print.Out;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -41,7 +42,7 @@ public class Client {
                         channel.pipeline().addLast(new SimpleChannelInboundHandler<ByteBuf>() {
                             @Override
                             protected void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) throws Exception {
-                                System.out.println("客户端接收到消息：" + byteBuf.toString(StandardCharsets.UTF_8));
+                                Out.println("客户端接收到消息：" + byteBuf.toString(StandardCharsets.UTF_8));
                             }
                         });
                     }

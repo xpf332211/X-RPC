@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ZookeeperRegistry extends AbstractRegistry {
     private final ZooKeeper zooKeeper;
-    int port = 8080;
+    int port = 8081;
     public ZookeeperRegistry() {
         zooKeeper = ZookeeperUtils.createZookeeper();
     }
