@@ -2,9 +2,12 @@ package com.meiya.proxy.handler;
 
 import com.meiya.NettyBootstrap;
 import com.meiya.XrpcBootstrap;
+import com.meiya.enumeration.RequestType;
 import com.meiya.exceptions.DiscoveryException;
 import com.meiya.exceptions.NettyException;
 import com.meiya.registry.Registry;
+import com.meiya.transport.message.RequestPayload;
+import com.meiya.transport.message.XrpcRequest;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -50,17 +53,31 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
         //2.服务调用方启动netty 连接服务提供方 发送需要调用的服务的信息
         Channel channel = getAvailableChannel(address);
         log.info("服务调用方,获取了和【{}】建立的连接通道,准备发送数据", address);
-        //3.封装报文
-
-        //4.写出报文
+        //3.封装请求
+        RequestPayload payload = RequestPayload.builder()
+                .interfaceName(interfaceRef.getName())
+                .methodName(method.getName())
+                .parametersType(method.getParameterTypes())
+                .parametersValue(args)
+                .returnType(method.getReturnType())
+                .build();
+        XrpcRequest xrpcRequest = XrpcRequest.builder()
+                .requestId(1L)
+                .compressType((byte) 1)
+                .serializeType((byte) 1)
+                .requestType(RequestType.REQUEST.getId())
+                .requestPayload(payload)
+                .build();
+        //4.写出请求
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         //对外暴露这个completableFuture
         XrpcBootstrap.PENDING_REQUEST.put(1L, completableFuture);
         String line = "hello,来自服务调用方的消息~~";
-        channel.writeAndFlush(Unpooled.copiedBuffer(line, StandardCharsets.UTF_8))
+        channel.writeAndFlush(xrpcRequest)
                 .addListener((ChannelFutureListener) future -> {
+                    log.info("服务调用方发送了消息：【{}】", xrpcRequest.toString());
                 });
-        log.info("服务调用方发送了消息：【{}】", line);
+
 
         //5.获取响应的结果
         //阻塞等待其他地方处理这个completableFuture
@@ -68,6 +85,13 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
         return o;
     }
 
+
+    /**
+     * 获取一个可用的channel
+     *
+     * @param address 与服务提供方的连接地址
+     * @return 可用的channel
+     */
     private Channel getAvailableChannel(InetSocketAddress address) {
         //从缓存中获取channel
         Channel channel = XrpcBootstrap.CHANNEL_CACHE.get(address);

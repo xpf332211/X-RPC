@@ -27,6 +27,5 @@ public class ConsumerApplication {
         //获取代理对象
         MessageService messageService = referenceConfig.get();
         String message = messageService.getMessage("Jerry");
-        Out.println(message);
     }
 }

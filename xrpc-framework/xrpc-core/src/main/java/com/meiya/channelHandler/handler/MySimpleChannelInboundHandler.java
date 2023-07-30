@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 import java.util.concurrent.CompletableFuture;
 
 /**
+ * 入站处理器
  * @author xiaopf
  */
 public class MySimpleChannelInboundHandler extends SimpleChannelInboundHandler<ByteBuf> {
