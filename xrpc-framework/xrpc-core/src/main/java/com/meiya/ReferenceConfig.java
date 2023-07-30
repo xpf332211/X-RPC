@@ -52,7 +52,7 @@ public class ReferenceConfig<T> {
      */
     public T get() {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        Class[] classes = new Class[]{interfaceRef};
+        Class<?>[] classes = new Class[]{interfaceRef};
         InvocationHandler invocationHandler = new RpcConsumerInvocationHandler(registry,interfaceRef);
         //使用动态代理 生成代理对象
         Object proxy = Proxy.newProxyInstance(classLoader, classes, invocationHandler);

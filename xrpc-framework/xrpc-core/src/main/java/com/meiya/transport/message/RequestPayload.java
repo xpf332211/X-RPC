@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
+ * 请求体
  * 请求的接口方法的描述
  * @author xiaopf
  */

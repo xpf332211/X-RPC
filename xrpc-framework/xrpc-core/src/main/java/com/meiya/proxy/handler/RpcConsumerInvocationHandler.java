@@ -81,8 +81,8 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
 
         //5.获取响应的结果
         //阻塞等待其他地方处理这个completableFuture
-        Object o = completableFuture.get(10, TimeUnit.SECONDS);
-        return o;
+        Object result = completableFuture.get(10, TimeUnit.SECONDS);
+        return result;
     }
 
 

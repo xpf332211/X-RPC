@@ -29,7 +29,7 @@ import java.nio.charset.StandardCharsets;
  * @author xiaopf
  */
 @Slf4j
-public class MessageEncoderHandler extends MessageToByteEncoder<XrpcRequest> {
+public class RequestEncodeHandler extends MessageToByteEncoder<XrpcRequest> {
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, XrpcRequest xrpcRequest, ByteBuf byteBuf) throws Exception {
         //4个字节的魔数值
