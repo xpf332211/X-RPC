@@ -1,18 +1,9 @@
 package com.meiya;
 
-import com.meiya.utils.print.Out;
+import com.meiya.channelHandler.ConsumerChannelInitializer;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @author xiaopf
@@ -24,19 +15,7 @@ public class NettyBootstrap {
     static {
         bootstrap = bootstrap.group(GROUP)
                 .channel(NioSocketChannel.class)
-                .handler(new ChannelInitializer<>() {
-                    @Override
-                    protected void initChannel(Channel channel) {
-                        channel.pipeline().addLast(new SimpleChannelInboundHandler<ByteBuf>() {
-                            @Override
-                            protected void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf buf) throws Exception {
-                                CompletableFuture<Object> future = XrpcBootstrap.PENDING_REQUEST.get(1L);
-                                String result = "服务调用方已经收到服务提供方的消息：" + "【" + buf.toString(Charset.defaultCharset()) + "】";
-                                future.complete(result);
-                            }
-                        });
-                    }
-                });
+                .handler(new ConsumerChannelInitializer());
     }
     private NettyBootstrap(){}
     public static Bootstrap getBootstrap(){
