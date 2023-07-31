@@ -11,6 +11,8 @@ public class ConsumerApplication {
         //获取一个reference 把配置项封装
         ReferenceConfig<MessageService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(MessageService.class);
+        ReferenceConfig<ProductService> referenceConfig1 = new ReferenceConfig<>();
+        referenceConfig1.setInterface(ProductService.class);
 
         /**
          * 代理做了什么？
@@ -28,5 +30,10 @@ public class ConsumerApplication {
         MessageService messageService = referenceConfig.get();
         String message = messageService.getMessage("Jerry");
         Out.println(message);
+
+//        ProductService productService = referenceConfig1.get();
+//        String product = productService.getProduct();
+//        Out.println(product);
+
     }
 }

@@ -48,11 +48,11 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         //1.服务发现 从注册中心寻找一个可用服务
         InetSocketAddress address = registry.seek(interfaceRef.getName());
-        log.info("服务调用方,返回了服务【{}】的可用主机【{}】", interfaceRef.getName(), address);
+        log.info("服务调用方,获取了服务【{}】的可用主机【{}】", interfaceRef.getName(), address);
 
         //2.服务调用方启动netty 连接服务提供方 发送需要调用的服务的信息
         Channel channel = getAvailableChannel(address);
-        log.info("服务调用方,获取了和【{}】建立的连接通道,准备发送数据", address);
+        log.info("服务调用方,获取了和【{}】主机建立的连接通道,准备发送请求", address);
         //3.封装请求
         RequestPayload payload = RequestPayload.builder()
                 .interfaceName(interfaceRef.getName())
@@ -61,8 +61,9 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
                 .parametersValue(args)
                 .returnType(method.getReturnType())
                 .build();
+        long requestId = 1L;
         XrpcRequest xrpcRequest = XrpcRequest.builder()
-                .requestId(1L)
+                .requestId(requestId)
                 .compressType((byte) 1)
                 .serializeType((byte) 1)
                 .requestType(RequestType.REQUEST.getId())
@@ -72,16 +73,16 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         //对外暴露这个completableFuture
         XrpcBootstrap.PENDING_REQUEST.put(1L, completableFuture);
-        String line = "hello,来自服务调用方的消息~~";
         channel.writeAndFlush(xrpcRequest)
                 .addListener((ChannelFutureListener) future -> {
-                    log.info("服务调用方发送了消息：【{}】", xrpcRequest.toString());
+                    log.info("服务调用方发送了id为【{}】的请求：【{}】",requestId, xrpcRequest.toString());
                 });
 
 
         //5.获取响应的结果
         //阻塞等待其他地方处理这个completableFuture
         Object result = completableFuture.get(10, TimeUnit.SECONDS);
+        log.info("id为【{}】的请求得到调用结果为【{}】",requestId,result);
         return result;
     }
 
@@ -103,7 +104,7 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
             bootstrap.connect(address)
                     .addListener((ChannelFutureListener) future -> {
                         if (future.isDone()) {
-                            log.info("已经和【{}】服务提供方连接成功", address);
+                            log.info("服务调用方已经和【{}】服务提供方连接成功", address);
                             //如果连接建立完毕 将连接存在channelCompletableFuture中，便于主线程获取
                             channelCompletableFuture.complete(future.channel());
                         }

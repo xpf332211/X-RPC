@@ -68,6 +68,7 @@ public class RequestEncodeHandler extends MessageToByteEncoder<XrpcRequest> {
         byteBuf.writeInt(MessageFormatConstant.HEADER_LENGTH + payLoadLength);
         //4.将写指针归位
         byteBuf.writerIndex(index);
+        log.info("id为【{}】的请求经过了报文封装",xrpcRequest.getRequestId());
     }
 
     /**

@@ -48,13 +48,13 @@ public class ResponseDecodeHandler extends LengthFieldBasedFrameDecoder {
         byteBuf.readBytes(magic);
         for (int i = 0; i < magic.length; i++) {
             if (magic[i] != MessageFormatConstant.MAGIC[i]) {
-                throw new RuntimeException("获得的请求不合法！");
+                throw new RuntimeException("获得的响应不合法！");
             }
         }
         //解析版本
         byte version = byteBuf.readByte();
         if (version < MessageFormatConstant.VERSION) {
-            throw new RuntimeException("获得的请求版本不被支持！");
+            throw new RuntimeException("获得的响应版本不被支持！");
         }
         //解析首部长度
         short headerLength = byteBuf.readShort();
@@ -90,6 +90,7 @@ public class ResponseDecodeHandler extends LengthFieldBasedFrameDecoder {
             log.error("响应【{}】反序列化时发生异常",requestId);
             throw new RuntimeException(e);
         }
+        log.info("id为【{}】的响应经过了报文解析",xrpcResponse.getRequestId());
         return xrpcResponse;
 
     }

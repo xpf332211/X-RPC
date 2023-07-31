@@ -94,9 +94,10 @@ public class RequestDecodeHandler extends LengthFieldBasedFrameDecoder {
                 RequestPayload requestPayload = (RequestPayload) ois.readObject();
                 xrpcRequest.setRequestPayload(requestPayload);
         }catch (IOException | ClassNotFoundException e){
-            log.error("请求【{}】反序列化时发生异常",requestId);
+            log.error("id为【{}】的请求反序列化时发生异常",requestId);
             throw new RuntimeException(e);
         }
+        log.info("id为【{}】的请求经过了报文解析",requestId);
         return xrpcRequest;
 
     }

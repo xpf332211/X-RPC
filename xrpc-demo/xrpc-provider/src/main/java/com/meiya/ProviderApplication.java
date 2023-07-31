@@ -2,6 +2,7 @@ package com.meiya;
 
 import com.meiya.impl.MessageServiceImpl;
 
+import com.meiya.impl.ProductServiceImpl;
 import com.meiya.utils.print.Out;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,6 +23,9 @@ public class ProviderApplication {
         ServiceConfig<MessageService> messageServiceConfig = new ServiceConfig<>();
         messageServiceConfig.setInterface(MessageService.class);
         messageServiceConfig.setRef(new MessageServiceImpl());
+        ServiceConfig<ProductService> productServiceConfig = new ServiceConfig<>();
+        productServiceConfig.setInterface(ProductService.class);
+        productServiceConfig.setRef(new ProductServiceImpl());
         //启动引导 配置
         //应用名称 注册中心 协议
         //发布服务
@@ -30,6 +34,7 @@ public class ProviderApplication {
                 .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
                 .protocol(new ProtocolConfig("jdk"))
                 .publish(messageServiceConfig)
+                .publish(productServiceConfig)
                 .start();
         
     }

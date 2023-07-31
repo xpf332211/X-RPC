@@ -31,15 +31,18 @@ public class RequestMethodCallHandler extends SimpleChannelInboundHandler<XrpcRe
         ResponseBody responseBody = ResponseBody.builder()
                 .responseContext(o)
                 .build();
+        long requestId = 1L;
         XrpcResponse xrpcResponse = XrpcResponse.builder()
                 .serializeType((byte) 1)
                 .compressType((byte) 1)
                 .responseCode(ResponseCode.SUCCESS.getCode())
-                .requestId(1L)
+                .requestId(requestId)
                 .responseBody(responseBody)
                 .build();
         //写出响应
-        channelHandlerContext.channel().writeAndFlush(xrpcResponse);
+        channelHandlerContext.channel().writeAndFlush(xrpcResponse).addListener(future -> {
+            log.info("服务提供方发送了id为【{}】的响应",requestId);
+        });
     }
 
     private Object callTargetMethod(RequestPayload requestPayload) {
