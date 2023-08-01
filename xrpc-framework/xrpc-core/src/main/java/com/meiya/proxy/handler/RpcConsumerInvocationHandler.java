@@ -61,7 +61,7 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
                 .parametersValue(args)
                 .returnType(method.getReturnType())
                 .build();
-        long requestId = 1L;
+        long requestId = XrpcBootstrap.ID_GENERATOR.getId();
         XrpcRequest xrpcRequest = XrpcRequest.builder()
                 .requestId(requestId)
                 .compressType((byte) 1)

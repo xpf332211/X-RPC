@@ -31,7 +31,7 @@ public class RequestMethodCallHandler extends SimpleChannelInboundHandler<XrpcRe
         ResponseBody responseBody = ResponseBody.builder()
                 .responseContext(o)
                 .build();
-        long requestId = 1L;
+        long requestId = xrpcRequest.getRequestId();
         XrpcResponse xrpcResponse = XrpcResponse.builder()
                 .serializeType((byte) 1)
                 .compressType((byte) 1)

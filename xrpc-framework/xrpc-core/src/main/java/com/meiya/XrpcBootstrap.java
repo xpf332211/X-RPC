@@ -6,6 +6,7 @@ import com.meiya.channelHandler.handler.RequestMethodCallHandler;
 import com.meiya.channelHandler.handler.ResponseEncodeHandler;
 import com.meiya.exceptions.NettyException;
 import com.meiya.registry.Registry;
+import com.meiya.utils.IdGenerator;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -33,10 +34,16 @@ public class XrpcBootstrap {
     private String applicationName;
     private RegistryConfig registryConfig;
     private ProtocolConfig protocolConfig;
+
     /**
      * 注册中心
      */
     private Registry registry;
+
+    /**
+     * id生成器
+     */
+    public static final IdGenerator ID_GENERATOR = new IdGenerator(2,10);
 
     /**
      * 全局对外挂起的completableFuture
