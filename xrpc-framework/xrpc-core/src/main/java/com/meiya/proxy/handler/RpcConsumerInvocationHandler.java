@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -48,10 +49,9 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        //1.服务发现 从注册中心寻找一个可用服务
-        InetSocketAddress address = registry.seek(interfaceRef.getName());
+        //1.使用负载均衡器 从注册中心选取一个可用服务
+        InetSocketAddress address = XrpcBootstrap.LOAD_BALANCER.getServiceAddress(interfaceRef.getName());
         log.info("服务调用方,获取了服务【{}】的可用主机【{}】", interfaceRef.getName(), address);
-
         //2.服务调用方启动netty 连接服务提供方 发送需要调用的服务的信息
         Channel channel = getAvailableChannel(address);
         log.info("服务调用方,获取了和【{}】主机建立的连接通道,准备发送请求", address);
@@ -82,14 +82,14 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
         XrpcBootstrap.PENDING_REQUEST.put(1L, completableFuture);
         channel.writeAndFlush(xrpcRequest)
                 .addListener((ChannelFutureListener) future -> {
-                    log.info("服务调用方发送了id为【{}】的请求：【{}】",requestId, xrpcRequest.toString());
+                    log.info("服务调用方发送了id为【{}】的请求：【{}】", requestId, xrpcRequest.toString());
                 });
 
 
         //5.获取响应的结果
         //阻塞等待其他地方处理这个completableFuture
         Object result = completableFuture.get(10, TimeUnit.SECONDS);
-        log.info("id为【{}】的请求得到调用结果为【{}】",requestId,result);
+        log.info("id为【{}】的请求得到调用结果为【{}】", requestId, result);
         return result;
     }
 

@@ -1,8 +1,7 @@
 package com.meiya.compress;
 
 import com.meiya.compress.impl.GzipCompressor;
-import com.meiya.exceptions.SerializeException;
-import com.meiya.serialize.SerializerWrapper;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author xiaopf
  */
+@Slf4j
 public class CompressorFactory {
     private static final Map<String,CompressorWrapper> COMPRESSOR_CACHE_TYPE = new ConcurrentHashMap<>(4);
     private static final Map<Byte,CompressorWrapper> COMPRESSOR_CACHE_CODE = new ConcurrentHashMap<>(4);
@@ -26,7 +26,7 @@ public class CompressorFactory {
      */
     public static Compressor getCompressor(String compressorType){
         CompressorWrapper wrapper = COMPRESSOR_CACHE_TYPE.get(compressorType);
-        validateWrapperNotNull(wrapper);
+        wrapper = validateWrapperNotNull(wrapper);
         return wrapper.getCompressor();
     }
 
@@ -37,7 +37,7 @@ public class CompressorFactory {
      */
     public static Compressor getCompressor(byte compressorCode){
         CompressorWrapper wrapper = COMPRESSOR_CACHE_CODE.get(compressorCode);
-        validateWrapperNotNull(wrapper);
+        wrapper = validateWrapperNotNull(wrapper);
         return wrapper.getCompressor();
     }
 
@@ -48,7 +48,7 @@ public class CompressorFactory {
      */
     public static byte getCompressorCode(String compressorType){
         CompressorWrapper wrapper = COMPRESSOR_CACHE_TYPE.get(compressorType);
-        validateWrapperNotNull(wrapper);
+        wrapper = validateWrapperNotNull(wrapper);
         return wrapper.getCode();
     }
 
@@ -59,16 +59,20 @@ public class CompressorFactory {
      */
     public static String getCompressorType(byte compressorCode){
         CompressorWrapper wrapper = COMPRESSOR_CACHE_CODE.get(compressorCode);
-        validateWrapperNotNull(wrapper);
+        wrapper = validateWrapperNotNull(wrapper);
         return wrapper.getType();
     }
+
     /**
-     * 判断wrapper是否为空 若是则抛出异常
-     * @param wrapper wrapper
+     * 判断wrapper是否为空 若是则采用默认gzip压缩的wrapper
+     * @param wrapper 需要判断的wrapper
+     * @return wrapper
      */
-    private static void validateWrapperNotNull(CompressorWrapper wrapper){
+    private static CompressorWrapper validateWrapperNotNull(CompressorWrapper wrapper){
         if (wrapper == null){
-            throw new SerializeException("未匹配到指定的压缩类型！");
+            log.info("未匹配到指定的压缩类型,默认采用gzip压缩");
+            wrapper = COMPRESSOR_CACHE_TYPE.get("gzip");
         }
+        return wrapper;
     }
 }

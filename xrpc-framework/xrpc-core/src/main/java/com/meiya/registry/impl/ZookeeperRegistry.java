@@ -2,6 +2,7 @@ package com.meiya.registry.impl;
 
 import com.meiya.Constant;
 import com.meiya.ServiceConfig;
+import com.meiya.XrpcBootstrap;
 import com.meiya.exceptions.DiscoveryException;
 import com.meiya.registry.AbstractRegistry;
 import com.meiya.registry.Registry;
@@ -23,13 +24,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ZookeeperRegistry extends AbstractRegistry {
     private final ZooKeeper zooKeeper;
-    int port = 8081;
     public ZookeeperRegistry() {
         zooKeeper = ZookeeperUtils.createZookeeper();
     }
     public ZookeeperRegistry(String connectStr,int sessionTimeout) {
         zooKeeper = ZookeeperUtils.createZookeeper(connectStr,sessionTimeout);
     }
+
 
 
     @Override
@@ -49,7 +50,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
         }
         //创建服务对应的子节点 为临时节点 名称为ip:port
         //服务提供方的端口先直接定义好 还需要一个获取ip的方法
-        String childServiceName = providersPath + '/' + NetUtils.getIp() + ':' + port;
+        String childServiceName = providersPath + '/' + NetUtils.getIp() + ':' + XrpcBootstrap.PORT;
         if (!ZookeeperUtils.exists(zooKeeper,childServiceName,null)){
             ZookeeperNode zookeeperNode = new ZookeeperNode(childServiceName,null);
             ZookeeperUtils.createNode(zooKeeper,zookeeperNode,null,null, CreateMode.EPHEMERAL);
@@ -57,7 +58,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
     }
 
     @Override
-    public InetSocketAddress seek(String serviceName) {
+    public List<InetSocketAddress> seekServiceList(String serviceName) {
         String servicePath = Constant.BATH_PROVIDERS_PATH + '/' + serviceName;
         //获取子节点
         List<String> childrenService = ZookeeperUtils.getChildren(zooKeeper,servicePath,null);
@@ -70,6 +71,8 @@ public class ZookeeperRegistry extends AbstractRegistry {
         if (inetSocketAddressList.isEmpty()){
             throw new DiscoveryException("未获取到可用的子节点");
         }
-        return inetSocketAddressList.get(0);
+        return inetSocketAddressList;
     }
+
+
 }

@@ -3,6 +3,7 @@ package com.meiya.registry;
 import com.meiya.ServiceConfig;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 /**
  * @author xiaopf
@@ -15,9 +16,9 @@ public interface Registry {
     void register(ServiceConfig<?> serviceConfig);
 
     /**
-     * 从注册中心拉取一个可用的服务
+     * 从注册中心拉取服务列表
      * @param serviceName 服务名称
-     * @return 服务地址
+     * @return 服务地址列表
      */
-    InetSocketAddress seek(String serviceName);
+    List<InetSocketAddress> seekServiceList(String serviceName);
 }

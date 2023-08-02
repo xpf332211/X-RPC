@@ -4,6 +4,7 @@ import com.meiya.ServiceConfig;
 import com.meiya.registry.AbstractRegistry;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 /**
  * @author xiaopf
@@ -19,7 +20,9 @@ public class NacosRegistry extends AbstractRegistry {
     }
 
     @Override
-    public InetSocketAddress seek(String serviceName) {
+    public List<InetSocketAddress> seekServiceList(String serviceName) {
         return null;
     }
+
+
 }

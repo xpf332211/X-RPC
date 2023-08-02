@@ -4,6 +4,7 @@ import com.meiya.exceptions.SerializeException;
 import com.meiya.serialize.impl.HessianSerializer;
 import com.meiya.serialize.impl.JdkSerializer;
 import com.meiya.serialize.impl.JsonSerializer;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author xiaopengfei
  */
+@Slf4j
 public class SerializerFactory {
 
     /**
@@ -40,7 +42,7 @@ public class SerializerFactory {
      */
     public static Serializer getSerializer(String serializeType) {
         SerializerWrapper wrapper = SERIALIZER_CACHE_TYPE.get(serializeType);
-        validateWrapperNotNull(wrapper);
+        wrapper = validateWrapperNotNull(wrapper);
         return wrapper.getSerializer();
     }
 
@@ -51,7 +53,7 @@ public class SerializerFactory {
      */
     public static Serializer getSerializer(byte serializeCode){
         SerializerWrapper wrapper = SERIALIZER_CACHE_CODE.get(serializeCode);
-        validateWrapperNotNull(wrapper);
+        wrapper = validateWrapperNotNull(wrapper);
         return wrapper.getSerializer();
     }
 
@@ -62,7 +64,7 @@ public class SerializerFactory {
      */
     public static String getSerializerType(byte serializeCode){
         SerializerWrapper wrapper = SERIALIZER_CACHE_CODE.get(serializeCode);
-        validateWrapperNotNull(wrapper);
+        wrapper = validateWrapperNotNull(wrapper);
         return wrapper.getType();
     }
 
@@ -73,17 +75,20 @@ public class SerializerFactory {
      */
     public static byte getSerializerCode(String serializeType){
         SerializerWrapper wrapper = SERIALIZER_CACHE_TYPE.get(serializeType);
-        validateWrapperNotNull(wrapper);
+        wrapper = validateWrapperNotNull(wrapper);
         return wrapper.getCode();
     }
 
     /**
-     * 判断wrapper是否为空 若是则抛出异常
-     * @param wrapper wrapper
+     * 判断wrapper是否为空 若是则采用默认jdk序列的wrapper
+     * @param wrapper 需要判断的wrapper
+     * @return wrapper
      */
-    private static void validateWrapperNotNull(SerializerWrapper wrapper){
+    private static SerializerWrapper validateWrapperNotNull(SerializerWrapper wrapper){
         if (wrapper == null){
-            throw new SerializeException("未匹配到指定的序列化方式！");
+            log.info("未匹配到指定的序列化类型,默认采用jdk序列化");
+            wrapper = SERIALIZER_CACHE_TYPE.get("jdk");
         }
+        return wrapper;
     }
 }

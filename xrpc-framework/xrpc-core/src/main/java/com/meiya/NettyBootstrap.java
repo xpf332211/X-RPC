@@ -1,6 +1,6 @@
 package com.meiya;
 
-import com.meiya.channelHandler.ConsumerChannelInitializer;
+import com.meiya.channelhandler.ConsumerChannelInitializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;

@@ -33,6 +33,10 @@ public class ConsumerApplication {
         String message = messageService.getMessage("Jerry");
         Out.println(message);
 
+        for (int i = 0;i < 10;i++){
+            message = messageService.getMessage("Jerry");
+            Out.println(message);
+        }
 //        ProductService productService = referenceConfig1.get();
 //        String product = productService.getProduct();
 //        Out.println(product);

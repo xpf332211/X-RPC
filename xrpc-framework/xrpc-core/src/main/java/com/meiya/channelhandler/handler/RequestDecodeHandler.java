@@ -1,28 +1,27 @@
-package com.meiya.channelHandler.handler;
+package com.meiya.channelhandler.handler;
 
 import com.meiya.compress.Compressor;
 import com.meiya.compress.CompressorFactory;
 import com.meiya.enumeration.RequestType;
 import com.meiya.serialize.Serializer;
 import com.meiya.serialize.SerializerFactory;
-import com.meiya.serialize.impl.JdkSerializer;
-import com.meiya.transport.message.*;
+import com.meiya.transport.message.MessageFormatConstant;
+import com.meiya.transport.message.RequestPayload;
+import com.meiya.transport.message.XrpcRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-
 /**
- * 入站处理器 解析响应报文
+ * 入站处理器 解析请求报文
+ *
  * @author xiaopf
  */
 @Slf4j
-public class ResponseDecodeHandler extends LengthFieldBasedFrameDecoder {
-    public ResponseDecodeHandler() {
+public class RequestDecodeHandler extends LengthFieldBasedFrameDecoder {
+
+    public RequestDecodeHandler() {
         //截取报文
         super(
                 //最大帧长度 超过会直接丢弃报文
@@ -53,13 +52,13 @@ public class ResponseDecodeHandler extends LengthFieldBasedFrameDecoder {
         byteBuf.readBytes(magic);
         for (int i = 0; i < magic.length; i++) {
             if (magic[i] != MessageFormatConstant.MAGIC[i]) {
-                throw new RuntimeException("获得的响应不合法！");
+                throw new RuntimeException("获得的请求不合法！");
             }
         }
         //解析版本
         byte version = byteBuf.readByte();
-        if (version < MessageFormatConstant.VERSION) {
-            throw new RuntimeException("获得的响应版本不被支持！");
+        if (version > MessageFormatConstant.VERSION) {
+            throw new RuntimeException("获得的请求版本不被支持！");
         }
         //解析首部长度
         short headerLength = byteBuf.readShort();
@@ -69,29 +68,33 @@ public class ResponseDecodeHandler extends LengthFieldBasedFrameDecoder {
         byte serializeType = byteBuf.readByte();
         //解析压缩类型
         byte compressType = byteBuf.readByte();
-        //解析响应码
-        byte responseCode = byteBuf.readByte();
+        //解析请求类型
+        byte requestType = byteBuf.readByte();
         //解析请求id
         long requestId = byteBuf.readLong();
-        //封装响应类 (缺少responseBody)
-        XrpcResponse xrpcResponse = XrpcResponse.builder()
+        //封装请求类 （缺少requestPayload）
+        XrpcRequest xrpcRequest = XrpcRequest.builder()
                 .serializeType(serializeType)
                 .compressType(compressType)
-                .responseCode(responseCode)
+                .requestType(requestType)
                 .requestId(requestId)
                 .build();
-
-        //解析响应体
-        int bodyLength = fullLength - headerLength;
-        byte[] body = new byte[bodyLength];
-        byteBuf.readBytes(body);
+        //判断是否为心跳检测请求 若是则不需要解析请求体
+        if (xrpcRequest.getRequestType() == RequestType.HEART_BETA.getId()){
+            return xrpcRequest;
+        }
+        //解析请求体
+        int payloadLength = fullLength - headerLength;
+        byte[] payload = new byte[payloadLength];
+        byteBuf.readBytes(payload);
         Compressor compressor = CompressorFactory.getCompressor(compressType);
-        body = compressor.decompress(body);
+        payload = compressor.decompress(payload);
         Serializer serializer = SerializerFactory.getSerializer(serializeType);
-        ResponseBody responseBody = serializer.deserialize(body, ResponseBody.class);
-        xrpcResponse.setResponseBody(responseBody);
-        log.info("id为【{}】的响应经过了报文解析",xrpcResponse.getRequestId());
-        return xrpcResponse;
-    }
-}
+        RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
+        xrpcRequest.setRequestPayload(requestPayload);
+        log.info("id为【{}】的请求经过了报文解析",requestId);
+        return xrpcRequest;
 
+    }
+
+}

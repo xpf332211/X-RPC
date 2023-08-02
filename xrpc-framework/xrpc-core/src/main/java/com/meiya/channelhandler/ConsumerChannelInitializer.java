@@ -1,8 +1,8 @@
-package com.meiya.channelHandler;
+package com.meiya.channelhandler;
 
-import com.meiya.channelHandler.handler.RequestEncodeHandler;
-import com.meiya.channelHandler.handler.ResponseCompleteHandler;
-import com.meiya.channelHandler.handler.ResponseDecodeHandler;
+import com.meiya.channelhandler.handler.RequestEncodeHandler;
+import com.meiya.channelhandler.handler.ResponseCompleteHandler;
+import com.meiya.channelhandler.handler.ResponseDecodeHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.logging.LogLevel;

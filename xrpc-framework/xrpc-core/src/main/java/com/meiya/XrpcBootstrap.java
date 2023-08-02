@@ -1,19 +1,15 @@
 package com.meiya;
 
-import com.meiya.channelHandler.ProviderChannelInitializer;
-import com.meiya.channelHandler.handler.RequestDecodeHandler;
-import com.meiya.channelHandler.handler.RequestMethodCallHandler;
-import com.meiya.channelHandler.handler.ResponseEncodeHandler;
+import com.meiya.channelhandler.ProviderChannelInitializer;
 import com.meiya.exceptions.NettyException;
+import com.meiya.loadbalancer.LoadBalancer;
+import com.meiya.loadbalancer.impl.RoundRobinLoadBalancer;
 import com.meiya.registry.Registry;
 import com.meiya.utils.IdGenerator;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,9 +34,20 @@ public class XrpcBootstrap {
 
 
     /**
+     * 负载均衡器
+     */
+    public static LoadBalancer LOAD_BALANCER;
+    /**
+     * 端口
+     */
+    public static int PORT = 8081;
+    /**
      * 注册中心
      */
     private Registry registry;
+    public Registry getRegistry(){
+        return this.registry;
+    }
 
     /**
      * 序列化类型 默认为jdk
@@ -105,6 +112,7 @@ public class XrpcBootstrap {
      */
     public XrpcBootstrap registry(RegistryConfig registryConfig) {
         this.registry = registryConfig.getRegistry();
+        LOAD_BALANCER = new RoundRobinLoadBalancer();
         return this;
     }
 
@@ -122,7 +130,6 @@ public class XrpcBootstrap {
      * 服务提供方 启动netty服务
      */
     public void start() {
-        int port = 8081;
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         NioEventLoopGroup boss = new NioEventLoopGroup(2);
         NioEventLoopGroup worker = new NioEventLoopGroup(10);
@@ -131,7 +138,7 @@ public class XrpcBootstrap {
             ChannelFuture channelFuture = serverBootstrap.group(boss, worker)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new ProviderChannelInitializer())
-                    .bind(port)
+                    .bind(PORT)
                     .sync();
             Channel channel = channelFuture.channel();
             channel.closeFuture().sync();
