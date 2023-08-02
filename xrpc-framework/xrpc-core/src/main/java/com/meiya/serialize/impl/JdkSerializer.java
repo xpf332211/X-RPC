@@ -23,10 +23,11 @@ public class JdkSerializer implements Serializer {
                 ObjectOutputStream oos = new ObjectOutputStream(baos);
         ) {
             oos.writeObject(object);
-            log.info("序列化对象【{}】完成",object);
-            return baos.toByteArray();
+            byte[] bytes = baos.toByteArray();
+            log.info("jdk序列化对象【{}】完成,序列化后的字节数为【{}】",object,bytes.length);
+            return bytes;
         } catch (IOException e) {
-            log.error("序列化对象【{}】时发生异常！",object);
+            log.error("jdk序列化对象【{}】时发生异常！",object);
             throw new SerializeException(e);
         }
     }
@@ -37,11 +38,11 @@ public class JdkSerializer implements Serializer {
                 ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
                 ObjectInputStream ois = new ObjectInputStream(bais)
         ) {
-            Object object = ois.readObject();
-            log.info("反序列化类【{}】完成",clazz);
-            return (T) object;
+            T t = (T)ois.readObject();
+            log.info("jdk反序列化类【{}】完成",clazz);
+            return t;
         }catch (IOException | ClassNotFoundException e){
-            log.error("反序列化对象【{}】时发生异常",clazz);
+            log.error("jdk反序列化对象【{}】时发生异常",clazz);
             throw new SerializeException(e);
         }
 
