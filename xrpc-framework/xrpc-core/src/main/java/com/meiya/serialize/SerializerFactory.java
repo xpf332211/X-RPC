@@ -46,22 +46,22 @@ public class SerializerFactory {
 
     /**
      * 根据byte数字获取实例
-     * @param code byte数字
+     * @param serializeCode byte数字
      * @return 序列化器实例
      */
-    public static Serializer getSerializer(byte code){
-        SerializerWrapper wrapper = SERIALIZER_CACHE_CODE.get(code);
+    public static Serializer getSerializer(byte serializeCode){
+        SerializerWrapper wrapper = SERIALIZER_CACHE_CODE.get(serializeCode);
         validateWrapperNotNull(wrapper);
         return wrapper.getSerializer();
     }
 
     /**
      * 根据byte数字获取对应的字符串type
-     * @param code byte数字
+     * @param serializeCode byte数字
      * @return 字符串type
      */
-    public static String getSerializerType(byte code){
-        SerializerWrapper wrapper = SERIALIZER_CACHE_CODE.get(code);
+    public static String getSerializerType(byte serializeCode){
+        SerializerWrapper wrapper = SERIALIZER_CACHE_CODE.get(serializeCode);
         validateWrapperNotNull(wrapper);
         return wrapper.getType();
     }

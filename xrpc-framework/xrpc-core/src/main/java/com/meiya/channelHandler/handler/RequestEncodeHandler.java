@@ -1,6 +1,8 @@
 package com.meiya.channelHandler.handler;
 
 import com.meiya.XrpcBootstrap;
+import com.meiya.compress.Compressor;
+import com.meiya.compress.CompressorFactory;
 import com.meiya.enumeration.RequestType;
 import com.meiya.serialize.Serializer;
 import com.meiya.serialize.SerializerFactory;
@@ -60,6 +62,8 @@ public class RequestEncodeHandler extends MessageToByteEncoder<XrpcRequest> {
             //payLoadLength个字节的请求体
             Serializer serializer = SerializerFactory.getSerializer(xrpcRequest.getSerializeType());
             byte[] payload = serializer.serialize(xrpcRequest.getRequestPayload());
+            Compressor compressor = CompressorFactory.getCompressor(xrpcRequest.getCompressType());
+            payload = compressor.compress(payload);
             byteBuf.writeBytes(payload);
             payLoadLength = payload.length;
         }

@@ -1,5 +1,7 @@
 package com.meiya.channelHandler.handler;
 
+import com.meiya.compress.Compressor;
+import com.meiya.compress.CompressorFactory;
 import com.meiya.enumeration.RequestType;
 import com.meiya.serialize.Serializer;
 import com.meiya.serialize.SerializerFactory;
@@ -90,6 +92,8 @@ public class RequestDecodeHandler extends LengthFieldBasedFrameDecoder {
         int payloadLength = fullLength - headerLength;
         byte[] payload = new byte[payloadLength];
         byteBuf.readBytes(payload);
+        Compressor compressor = CompressorFactory.getCompressor(compressType);
+        payload = compressor.decompress(payload);
         Serializer serializer = SerializerFactory.getSerializer(serializeType);
         RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
         xrpcRequest.setRequestPayload(requestPayload);

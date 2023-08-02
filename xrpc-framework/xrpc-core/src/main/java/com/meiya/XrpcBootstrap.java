@@ -43,9 +43,14 @@ public class XrpcBootstrap {
     private Registry registry;
 
     /**
-     * 序列化类型
+     * 序列化类型 默认为jdk
      */
-    public static String SERIALIZE_TYPE;
+    public static String SERIALIZE_TYPE = "jdk";
+
+    /**
+     * 压缩类型 默认为gzip
+     */
+    public static String COMPRESSOR_TYPE = "gzip";
 
     /**
      * id生成器
@@ -194,10 +199,22 @@ public class XrpcBootstrap {
      */
     public XrpcBootstrap serialize(String serializeType) {
 
-        if (StringUtils.isEmpty(serializeType)){
-            SERIALIZE_TYPE = "jdk";
+        if (StringUtils.isNotEmpty(serializeType)){
+            SERIALIZE_TYPE = serializeType;
         }
-        SERIALIZE_TYPE = serializeType;
+        return this;
+    }
+
+    /**
+     * 压缩类型配置
+     * @param compressType 压缩类型
+     * @return 当前实例
+     */
+    public XrpcBootstrap compress(String compressType) {
+
+        if (StringUtils.isNotEmpty(compressType)){
+            COMPRESSOR_TYPE = compressType;
+        }
         return this;
     }
 }

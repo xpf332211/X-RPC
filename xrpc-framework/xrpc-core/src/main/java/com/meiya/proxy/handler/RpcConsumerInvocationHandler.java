@@ -2,6 +2,7 @@ package com.meiya.proxy.handler;
 
 import com.meiya.NettyBootstrap;
 import com.meiya.XrpcBootstrap;
+import com.meiya.compress.CompressorFactory;
 import com.meiya.enumeration.RequestType;
 import com.meiya.exceptions.DiscoveryException;
 import com.meiya.exceptions.NettyException;
@@ -66,9 +67,11 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
         long requestId = XrpcBootstrap.ID_GENERATOR.getId();
         //简单工厂+包装类获取序列化方式 byte/String
         byte serializerCode = SerializerFactory.getSerializerCode(XrpcBootstrap.SERIALIZE_TYPE);
+        //简单工厂+包装类获取压缩方式 byte/String
+        byte compressorCode = CompressorFactory.getCompressorCode(XrpcBootstrap.COMPRESSOR_TYPE);
         XrpcRequest xrpcRequest = XrpcRequest.builder()
                 .requestId(requestId)
-                .compressType((byte) 1)
+                .compressType(compressorCode)
                 .serializeType(serializerCode)
                 .requestType(RequestType.REQUEST.getId())
                 .requestPayload(payload)
