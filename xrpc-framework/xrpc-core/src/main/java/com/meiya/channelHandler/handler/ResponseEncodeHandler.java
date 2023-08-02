@@ -1,5 +1,7 @@
 package com.meiya.channelHandler.handler;
 
+import com.meiya.serialize.Serializer;
+import com.meiya.serialize.impl.JdkSerializer;
 import com.meiya.transport.message.MessageFormatConstant;
 import com.meiya.transport.message.ResponseBody;
 import com.meiya.transport.message.XrpcResponse;
@@ -48,7 +50,8 @@ public class ResponseEncodeHandler extends MessageToByteEncoder<XrpcResponse> {
         byteBuf.writeLong(xrpcResponse.getRequestId());
 
         int bodyLength = 0;
-        byte[] responseBody = bodyToBytes(xrpcResponse.getResponseBody());
+        Serializer serializer = new JdkSerializer();
+        byte[] responseBody = serializer.serialize(xrpcResponse.getResponseBody());
         //bodyLength个字节的响应体
         byteBuf.writeBytes(responseBody);
         bodyLength = responseBody.length;
@@ -64,26 +67,4 @@ public class ResponseEncodeHandler extends MessageToByteEncoder<XrpcResponse> {
         byteBuf.writerIndex(index);
         log.info("id为【{}】的响应经过了报文封装",xrpcResponse.getRequestId());
     }
-
-    /**
-     * 将responseBody对象转成字节数组
-     * @param responseBody 响应体
-     * @return
-     */
-    private byte[] bodyToBytes(ResponseBody responseBody) {
-        //序列化
-        try (
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ObjectOutputStream oos = new ObjectOutputStream(baos);
-        ) {
-            oos.writeObject(responseBody);
-            return baos.toByteArray();
-        } catch (IOException e) {
-            log.error("响应体序列化时发生异常！");
-            throw new RuntimeException(e);
-        }
-
-    }
-
-
 }

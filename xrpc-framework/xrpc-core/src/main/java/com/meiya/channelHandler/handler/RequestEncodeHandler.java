@@ -1,6 +1,8 @@
 package com.meiya.channelHandler.handler;
 
 import com.meiya.enumeration.RequestType;
+import com.meiya.serialize.Serializer;
+import com.meiya.serialize.impl.JdkSerializer;
 import com.meiya.transport.message.MessageFormatConstant;
 import com.meiya.transport.message.RequestPayload;
 import com.meiya.transport.message.XrpcRequest;
@@ -54,7 +56,8 @@ public class RequestEncodeHandler extends MessageToByteEncoder<XrpcRequest> {
         int payLoadLength = 0;
         if (xrpcRequest.getRequestType() == RequestType.REQUEST.getId()){
             //payLoadLength个字节的请求体
-            byte[] payload = payloadToBytes(xrpcRequest.getRequestPayload());
+            Serializer serializer = new JdkSerializer();
+            byte[] payload = serializer.serialize(xrpcRequest.getRequestPayload());
             byteBuf.writeBytes(payload);
             payLoadLength = payload.length;
         }
@@ -69,29 +72,5 @@ public class RequestEncodeHandler extends MessageToByteEncoder<XrpcRequest> {
         //4.将写指针归位
         byteBuf.writerIndex(index);
         log.info("id为【{}】的请求经过了报文封装",xrpcRequest.getRequestId());
-    }
-
-    /**
-     * 将requestPayload对象转成字节数组
-     *
-     * @param requestPayload 请求体
-     * @return 字节数组
-     */
-    private byte[] payloadToBytes(RequestPayload requestPayload) {
-        //序列化
-        try (
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ObjectOutputStream oos = new ObjectOutputStream(baos);
-        ) {
-            oos.writeObject(requestPayload);
-            return baos.toByteArray();
-        } catch (IOException e) {
-            log.error("请求体序列化时发生异常！");
-            throw new RuntimeException(e);
-        }
-
-
-
-
     }
 }

@@ -1,6 +1,8 @@
 package com.meiya.channelHandler.handler;
 
 import com.meiya.enumeration.RequestType;
+import com.meiya.serialize.Serializer;
+import com.meiya.serialize.impl.JdkSerializer;
 import com.meiya.transport.message.MessageFormatConstant;
 import com.meiya.transport.message.RequestPayload;
 import com.meiya.transport.message.XrpcRequest;
@@ -87,16 +89,9 @@ public class RequestDecodeHandler extends LengthFieldBasedFrameDecoder {
         int payloadLength = fullLength - headerLength;
         byte[] payload = new byte[payloadLength];
         byteBuf.readBytes(payload);
-        try (
-                ByteArrayInputStream bais = new ByteArrayInputStream(payload);
-                ObjectInputStream ois = new ObjectInputStream(bais)
-        ) {
-                RequestPayload requestPayload = (RequestPayload) ois.readObject();
-                xrpcRequest.setRequestPayload(requestPayload);
-        }catch (IOException | ClassNotFoundException e){
-            log.error("id为【{}】的请求反序列化时发生异常",requestId);
-            throw new RuntimeException(e);
-        }
+        Serializer serializer = new JdkSerializer();
+        RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
+        xrpcRequest.setRequestPayload(requestPayload);
         log.info("id为【{}】的请求经过了报文解析",requestId);
         return xrpcRequest;
 
