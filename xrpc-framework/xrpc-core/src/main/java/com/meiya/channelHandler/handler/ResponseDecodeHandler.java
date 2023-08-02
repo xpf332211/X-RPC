@@ -2,6 +2,7 @@ package com.meiya.channelHandler.handler;
 
 import com.meiya.enumeration.RequestType;
 import com.meiya.serialize.Serializer;
+import com.meiya.serialize.SerializerFactory;
 import com.meiya.serialize.impl.JdkSerializer;
 import com.meiya.transport.message.*;
 import io.netty.buffer.ByteBuf;
@@ -82,7 +83,7 @@ public class ResponseDecodeHandler extends LengthFieldBasedFrameDecoder {
         int bodyLength = fullLength - headerLength;
         byte[] body = new byte[bodyLength];
         byteBuf.readBytes(body);
-        Serializer serializer = new JdkSerializer();
+        Serializer serializer = SerializerFactory.getSerializer(serializeType);
         ResponseBody responseBody = serializer.deserialize(body, ResponseBody.class);
         xrpcResponse.setResponseBody(responseBody);
         log.info("id为【{}】的响应经过了报文解析",xrpcResponse.getRequestId());

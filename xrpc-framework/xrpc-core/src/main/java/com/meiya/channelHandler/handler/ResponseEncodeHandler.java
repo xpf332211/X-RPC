@@ -1,6 +1,7 @@
 package com.meiya.channelHandler.handler;
 
 import com.meiya.serialize.Serializer;
+import com.meiya.serialize.SerializerFactory;
 import com.meiya.serialize.impl.JdkSerializer;
 import com.meiya.transport.message.MessageFormatConstant;
 import com.meiya.transport.message.ResponseBody;
@@ -50,7 +51,7 @@ public class ResponseEncodeHandler extends MessageToByteEncoder<XrpcResponse> {
         byteBuf.writeLong(xrpcResponse.getRequestId());
 
         int bodyLength = 0;
-        Serializer serializer = new JdkSerializer();
+        Serializer serializer = SerializerFactory.getSerializer(xrpcResponse.getSerializeType());
         byte[] responseBody = serializer.serialize(xrpcResponse.getResponseBody());
         //bodyLength个字节的响应体
         byteBuf.writeBytes(responseBody);

@@ -66,8 +66,8 @@ public class ZookeeperRegistry extends AbstractRegistry {
             String ip = ipAndPort[0];
             int port = Integer.parseInt(ipAndPort[1]);
             return new InetSocketAddress(ip,port);
-        }).collect(Collectors.toList());
-        if (inetSocketAddressList.size() == 0){
+        }).toList();
+        if (inetSocketAddressList.isEmpty()){
             throw new DiscoveryException("未获取到可用的子节点");
         }
         return inetSocketAddressList.get(0);

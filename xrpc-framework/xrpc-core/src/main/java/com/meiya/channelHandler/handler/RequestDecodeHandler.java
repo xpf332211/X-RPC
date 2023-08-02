@@ -2,6 +2,7 @@ package com.meiya.channelHandler.handler;
 
 import com.meiya.enumeration.RequestType;
 import com.meiya.serialize.Serializer;
+import com.meiya.serialize.SerializerFactory;
 import com.meiya.serialize.impl.JdkSerializer;
 import com.meiya.transport.message.MessageFormatConstant;
 import com.meiya.transport.message.RequestPayload;
@@ -89,7 +90,7 @@ public class RequestDecodeHandler extends LengthFieldBasedFrameDecoder {
         int payloadLength = fullLength - headerLength;
         byte[] payload = new byte[payloadLength];
         byteBuf.readBytes(payload);
-        Serializer serializer = new JdkSerializer();
+        Serializer serializer = SerializerFactory.getSerializer(serializeType);
         RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
         xrpcRequest.setRequestPayload(requestPayload);
         log.info("id为【{}】的请求经过了报文解析",requestId);

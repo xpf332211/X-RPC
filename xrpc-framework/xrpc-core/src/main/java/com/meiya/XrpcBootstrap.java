@@ -15,6 +15,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 
 import java.net.InetSocketAddress;
@@ -35,10 +36,16 @@ public class XrpcBootstrap {
     private RegistryConfig registryConfig;
     private ProtocolConfig protocolConfig;
 
+
     /**
      * 注册中心
      */
     private Registry registry;
+
+    /**
+     * 序列化类型
+     */
+    public static String SERIALIZE_TYPE;
 
     /**
      * id生成器
@@ -177,6 +184,20 @@ public class XrpcBootstrap {
      */
     public XrpcBootstrap reference(ReferenceConfig<?> referenceConfig) {
         referenceConfig.setRegistry(registry);
+        return this;
+    }
+
+    /**
+     * 序列化方式配置
+     * @param serializeType 序列化类型
+     * @return 当前实例
+     */
+    public XrpcBootstrap serialize(String serializeType) {
+
+        if (StringUtils.isEmpty(serializeType)){
+            SERIALIZE_TYPE = "jdk";
+        }
+        SERIALIZE_TYPE = serializeType;
         return this;
     }
 }

@@ -24,7 +24,8 @@ public class ConsumerApplication {
         XrpcBootstrap.getInstance()
                 .application("first-consumer")
                 .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .reference(referenceConfig);
+                .reference(referenceConfig)
+                .serialize("jdk");
 
         //获取代理对象
         MessageService messageService = referenceConfig.get();

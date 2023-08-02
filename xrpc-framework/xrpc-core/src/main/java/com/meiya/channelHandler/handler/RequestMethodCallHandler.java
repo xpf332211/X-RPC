@@ -3,6 +3,7 @@ package com.meiya.channelHandler.handler;
 import com.meiya.ServiceConfig;
 import com.meiya.XrpcBootstrap;
 import com.meiya.enumeration.ResponseCode;
+import com.meiya.serialize.SerializerFactory;
 import com.meiya.transport.message.RequestPayload;
 import com.meiya.transport.message.ResponseBody;
 import com.meiya.transport.message.XrpcRequest;
@@ -32,8 +33,9 @@ public class RequestMethodCallHandler extends SimpleChannelInboundHandler<XrpcRe
                 .responseContext(o)
                 .build();
         long requestId = xrpcRequest.getRequestId();
+        byte serializerCode = xrpcRequest.getSerializeType();
         XrpcResponse xrpcResponse = XrpcResponse.builder()
-                .serializeType((byte) 1)
+                .serializeType(serializerCode)
                 .compressType((byte) 1)
                 .responseCode(ResponseCode.SUCCESS.getCode())
                 .requestId(requestId)

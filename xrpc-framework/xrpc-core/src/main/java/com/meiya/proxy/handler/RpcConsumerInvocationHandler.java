@@ -6,6 +6,7 @@ import com.meiya.enumeration.RequestType;
 import com.meiya.exceptions.DiscoveryException;
 import com.meiya.exceptions.NettyException;
 import com.meiya.registry.Registry;
+import com.meiya.serialize.SerializerFactory;
 import com.meiya.transport.message.RequestPayload;
 import com.meiya.transport.message.XrpcRequest;
 import io.netty.bootstrap.Bootstrap;
@@ -61,11 +62,14 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
                 .parametersValue(args)
                 .returnType(method.getReturnType())
                 .build();
+        //雪花算法获取id
         long requestId = XrpcBootstrap.ID_GENERATOR.getId();
+        //简单工厂+包装类获取序列化方式 byte/String
+        byte serializerCode = SerializerFactory.getSerializerCode(XrpcBootstrap.SERIALIZE_TYPE);
         XrpcRequest xrpcRequest = XrpcRequest.builder()
                 .requestId(requestId)
                 .compressType((byte) 1)
-                .serializeType((byte) 1)
+                .serializeType(serializerCode)
                 .requestType(RequestType.REQUEST.getId())
                 .requestPayload(payload)
                 .build();
@@ -116,7 +120,7 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
             try {
                 channel = channelCompletableFuture.get(10, TimeUnit.SECONDS);
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                log.error("获取channel时发生异常", e);
+                log.error("获取channel时发生异常");
                 throw new DiscoveryException(e);
             }
             //缓存channel

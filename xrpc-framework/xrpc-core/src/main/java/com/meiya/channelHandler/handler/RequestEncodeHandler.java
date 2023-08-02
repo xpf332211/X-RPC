@@ -1,7 +1,9 @@
 package com.meiya.channelHandler.handler;
 
+import com.meiya.XrpcBootstrap;
 import com.meiya.enumeration.RequestType;
 import com.meiya.serialize.Serializer;
+import com.meiya.serialize.SerializerFactory;
 import com.meiya.serialize.impl.JdkSerializer;
 import com.meiya.transport.message.MessageFormatConstant;
 import com.meiya.transport.message.RequestPayload;
@@ -56,7 +58,7 @@ public class RequestEncodeHandler extends MessageToByteEncoder<XrpcRequest> {
         int payLoadLength = 0;
         if (xrpcRequest.getRequestType() == RequestType.REQUEST.getId()){
             //payLoadLength个字节的请求体
-            Serializer serializer = new JdkSerializer();
+            Serializer serializer = SerializerFactory.getSerializer(xrpcRequest.getSerializeType());
             byte[] payload = serializer.serialize(xrpcRequest.getRequestPayload());
             byteBuf.writeBytes(payload);
             payLoadLength = payload.length;
