@@ -10,6 +10,7 @@ import com.meiya.registry.Registry;
 import com.meiya.serialize.SerializerFactory;
 import com.meiya.transport.message.RequestPayload;
 import com.meiya.transport.message.XrpcRequest;
+import com.meiya.utils.NetUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -49,13 +50,7 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        //1.使用负载均衡器 从注册中心选取一个可用服务
-        InetSocketAddress address = XrpcBootstrap.LOAD_BALANCER.getServiceAddress(interfaceRef.getName());
-        log.info("服务调用方,获取了服务【{}】的可用主机【{}】", interfaceRef.getName(), address);
-        //2.服务调用方启动netty 连接服务提供方 发送需要调用的服务的信息
-        Channel channel = getAvailableChannel(address);
-        log.info("服务调用方,获取了和【{}】主机建立的连接通道,准备发送请求", address);
-        //3.封装请求
+        //1.封装请求
         RequestPayload payload = RequestPayload.builder()
                 .interfaceName(interfaceRef.getName())
                 .methodName(method.getName())
@@ -76,6 +71,14 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
                 .requestType(RequestType.REQUEST.getId())
                 .requestPayload(payload)
                 .build();
+        XrpcBootstrap.REQUEST_THREAD_LOCAL.set(xrpcRequest);
+        //2.使用负载均衡器 从注册中心选取一个可用服务
+        InetSocketAddress address = XrpcBootstrap.LOAD_BALANCER.getServiceAddress(interfaceRef.getName());
+        log.info("服务调用方,选取了服务【{}】的可用主机【{}】", interfaceRef.getName(), address);
+        //3.服务调用方启动netty 连接服务提供方 发送需要调用的服务的信息
+        Channel channel = getAvailableChannel(address);
+
+
         //4.写出请求
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         //对外暴露这个completableFuture
@@ -85,7 +88,7 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
                     log.info("服务调用方发送了id为【{}】的请求：【{}】", requestId, xrpcRequest.toString());
                 });
 
-
+        XrpcBootstrap.REQUEST_THREAD_LOCAL.remove();
         //5.获取响应的结果
         //阻塞等待其他地方处理这个completableFuture
         Object result = completableFuture.get(10, TimeUnit.SECONDS);
@@ -128,9 +131,12 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
             }
             //缓存channel
             XrpcBootstrap.CHANNEL_CACHE.put(address, channel);
+            log.info("服务调用方获取了与服务提供方【{}】连接的通道,准备发送请求", address);
+        }else {
+            log.info("服务调用方从缓存中获取了与服务提供方【{}】连接的通道,准备发送请求 ",address);
         }
         if (channel == null) {
-            log.error("获取或建立与【{}】服务提供方的channel时发生异常", address);
+            log.error("服务调用方获取或建立与【{}】服务提供方的channel时发生异常", address);
             throw new NettyException("获取或建立channel时发生异常");
         }
         return channel;

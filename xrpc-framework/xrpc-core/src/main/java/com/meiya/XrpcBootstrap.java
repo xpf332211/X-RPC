@@ -3,8 +3,10 @@ package com.meiya;
 import com.meiya.channelhandler.ProviderChannelInitializer;
 import com.meiya.exceptions.NettyException;
 import com.meiya.loadbalancer.LoadBalancer;
+import com.meiya.loadbalancer.impl.ConsistentHashLoadBalancer;
 import com.meiya.loadbalancer.impl.RoundRobinLoadBalancer;
 import com.meiya.registry.Registry;
+import com.meiya.transport.message.XrpcRequest;
 import com.meiya.utils.IdGenerator;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -33,6 +35,10 @@ public class XrpcBootstrap {
     private ProtocolConfig protocolConfig;
 
 
+    /**
+     * threadLocal
+     */
+    public static final ThreadLocal<XrpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
     /**
      * 负载均衡器
      */
@@ -112,7 +118,7 @@ public class XrpcBootstrap {
      */
     public XrpcBootstrap registry(RegistryConfig registryConfig) {
         this.registry = registryConfig.getRegistry();
-        LOAD_BALANCER = new RoundRobinLoadBalancer();
+        LOAD_BALANCER = new ConsistentHashLoadBalancer();
         return this;
     }
 
