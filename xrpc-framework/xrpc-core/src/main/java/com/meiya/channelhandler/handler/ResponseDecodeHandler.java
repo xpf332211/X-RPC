@@ -2,6 +2,7 @@ package com.meiya.channelhandler.handler;
 
 import com.meiya.compress.Compressor;
 import com.meiya.compress.CompressorFactory;
+import com.meiya.enumeration.ResponseCode;
 import com.meiya.serialize.Serializer;
 import com.meiya.serialize.SerializerFactory;
 import com.meiya.transport.message.*;
@@ -75,6 +76,10 @@ public class ResponseDecodeHandler extends LengthFieldBasedFrameDecoder {
                 .requestId(requestId)
                 .build();
 
+        //判断是否为检测响应 是的话则不需要解析响应体
+        if (xrpcResponse.getResponseCode() == ResponseCode.DETECT.getCode()){
+            return xrpcResponse;
+        }
         //解析响应体
         int bodyLength = fullLength - headerLength;
         byte[] body = new byte[bodyLength];

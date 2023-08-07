@@ -80,7 +80,7 @@ public class RequestDecodeHandler extends LengthFieldBasedFrameDecoder {
                 .requestId(requestId)
                 .build();
         //判断是否为心跳检测请求 若是则不需要解析请求体
-        if (xrpcRequest.getRequestType() == RequestType.HEART_BETA.getId()){
+        if (xrpcRequest.getRequestType() == RequestType.HEART_BEAT.getId()){
             return xrpcRequest;
         }
         //解析请求体

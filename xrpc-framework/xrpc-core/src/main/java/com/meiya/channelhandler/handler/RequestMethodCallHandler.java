@@ -2,6 +2,7 @@ package com.meiya.channelhandler.handler;
 
 import com.meiya.ServiceConfig;
 import com.meiya.XrpcBootstrap;
+import com.meiya.enumeration.RequestType;
 import com.meiya.enumeration.ResponseCode;
 import com.meiya.transport.message.RequestPayload;
 import com.meiya.transport.message.ResponseBody;
@@ -22,27 +23,36 @@ public class RequestMethodCallHandler extends SimpleChannelInboundHandler<XrpcRe
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, XrpcRequest xrpcRequest) throws Exception {
-        //获取请求体
-        RequestPayload requestPayload = xrpcRequest.getRequestPayload();
-        //方法调用
-        Object o = callTargetMethod(requestPayload);
-        //封装响应
-        ResponseBody responseBody = ResponseBody.builder()
-                .responseContext(o)
-                .build();
+
+        ResponseBody responseBody = null;
+        byte responseCode = ResponseCode.DETECT.getCode();
+        //判断是普通请求还是心跳请求 普通请求需要调用并返回响应 心跳请求响应体为null
+        if ((xrpcRequest.getRequestType() == RequestType.REQUEST.getId())) {
+            //获取请求体
+            RequestPayload requestPayload = xrpcRequest.getRequestPayload();
+            //方法调用
+            Object o = callTargetMethod(requestPayload);
+            //封装响应
+            responseBody = ResponseBody.builder()
+                    .responseContext(o)
+                    .build();
+            //处理状态码
+            responseCode = ResponseCode.SUCCESS.getCode();
+        }
+
         long requestId = xrpcRequest.getRequestId();
         byte serializerCode = xrpcRequest.getSerializeType();
         byte compressCode = xrpcRequest.getCompressType();
         XrpcResponse xrpcResponse = XrpcResponse.builder()
                 .serializeType(serializerCode)
                 .compressType(compressCode)
-                .responseCode(ResponseCode.SUCCESS.getCode())
+                .responseCode(responseCode)
                 .requestId(requestId)
                 .responseBody(responseBody)
                 .build();
         //写出响应
         channelHandlerContext.channel().writeAndFlush(xrpcResponse).addListener(future -> {
-            log.info("服务提供方发送了id为【{}】的响应",requestId);
+            log.info("服务提供方发送了id为【{}】的响应", requestId);
         });
     }
 
@@ -58,11 +68,11 @@ public class RequestMethodCallHandler extends SimpleChannelInboundHandler<XrpcRe
         Object refImpl = serviceConfig.getRef();
         //反射调用
         Object returnValue = null;
-        try{
-            Method method = refImpl.getClass().getMethod(methodName,parametersType);
+        try {
+            Method method = refImpl.getClass().getMethod(methodName, parametersType);
             returnValue = method.invoke(refImpl, parametersValue);
-        }catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e){
-            log.error("反射服务【{}】调用【{}】方法时发生异常",interfaceName,methodName);
+        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+            log.error("反射服务【{}】调用【{}】方法时发生异常", interfaceName, methodName);
             throw new RuntimeException(e);
         }
         return returnValue;

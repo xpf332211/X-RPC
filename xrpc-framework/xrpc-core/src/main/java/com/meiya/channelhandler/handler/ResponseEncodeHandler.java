@@ -2,6 +2,7 @@ package com.meiya.channelhandler.handler;
 
 import com.meiya.compress.Compressor;
 import com.meiya.compress.CompressorFactory;
+import com.meiya.enumeration.ResponseCode;
 import com.meiya.serialize.Serializer;
 import com.meiya.serialize.SerializerFactory;
 import com.meiya.transport.message.MessageFormatConstant;
@@ -46,14 +47,18 @@ public class ResponseEncodeHandler extends MessageToByteEncoder<XrpcResponse> {
         //8个字节的请求id
         byteBuf.writeLong(xrpcResponse.getRequestId());
 
+        //判断是否为成功响应，是才需要处理响应体
         int bodyLength = 0;
-        Serializer serializer = SerializerFactory.getSerializer(xrpcResponse.getSerializeType());
-        byte[] responseBody = serializer.serialize(xrpcResponse.getResponseBody());
-        Compressor compressor = CompressorFactory.getCompressor(xrpcResponse.getCompressType());
-        responseBody = compressor.compress(responseBody);
-        //bodyLength个字节的响应体
-        byteBuf.writeBytes(responseBody);
-        bodyLength = responseBody.length;
+        if (xrpcResponse.getResponseCode() == ResponseCode.SUCCESS.getCode()){
+            Serializer serializer = SerializerFactory.getSerializer(xrpcResponse.getSerializeType());
+            byte[] responseBody = serializer.serialize(xrpcResponse.getResponseBody());
+            Compressor compressor = CompressorFactory.getCompressor(xrpcResponse.getCompressType());
+            responseBody = compressor.compress(responseBody);
+            //bodyLength个字节的响应体
+            byteBuf.writeBytes(responseBody);
+            bodyLength = responseBody.length;
+        }
+
 
         //处理总长度字段的内容
         //1.保存当前写指针位置

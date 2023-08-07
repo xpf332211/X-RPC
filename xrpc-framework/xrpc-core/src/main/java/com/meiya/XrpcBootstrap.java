@@ -1,6 +1,7 @@
 package com.meiya;
 
 import com.meiya.channelhandler.ProviderChannelInitializer;
+import com.meiya.detection.HeartbeatDetector;
 import com.meiya.exceptions.NettyException;
 import com.meiya.loadbalancer.LoadBalancer;
 import com.meiya.loadbalancer.impl.ConsistentHashLoadBalancer;
@@ -19,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,6 +38,10 @@ public class XrpcBootstrap {
 
 
     /**
+     * 每个服务的不同主机的响应时长
+     */
+    public static final Map<String, TreeMap<Long,Channel>> SERVICE_RESPONSE_TIME_CACHE = new ConcurrentHashMap<>(16);
+    /**
      * threadLocal
      */
     public static final ThreadLocal<XrpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
@@ -46,7 +52,7 @@ public class XrpcBootstrap {
     /**
      * 端口
      */
-    public static int PORT = 8081;
+    public static int PORT = 8083;
     /**
      * 注册中心
      */
@@ -201,6 +207,8 @@ public class XrpcBootstrap {
      * @return 当前实例
      */
     public XrpcBootstrap reference(ReferenceConfig<?> referenceConfig) {
+        //开启线程池进行心跳检测
+        HeartbeatDetector.detect(referenceConfig.getInterface().getName());
         referenceConfig.setRegistry(registry);
         return this;
     }

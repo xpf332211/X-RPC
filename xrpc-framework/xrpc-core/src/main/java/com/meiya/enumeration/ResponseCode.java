@@ -11,7 +11,11 @@ public enum ResponseCode {
     /**
      * 请求失败状态码
      */
-    FAIL((byte) 2,"异常");
+    FAIL((byte) 2,"异常"),
+    /**
+     * 检测状态码
+     */
+    DETECT((byte) 3,"检测");
     private final byte code;
     private final String desc;
 

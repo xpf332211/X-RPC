@@ -13,7 +13,7 @@ public enum RequestType {
     /**
      * 心跳检测请求
      */
-    HEART_BETA((byte) 2,"心跳检测请求");
+    HEART_BEAT((byte) 2,"心跳检测请求");
     private final byte id;
     private final String type;
 

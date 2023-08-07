@@ -13,14 +13,14 @@ public class JsonSerializer implements Serializer {
     @Override
     public byte[] serialize(Object object) {
         byte[] bytes = JSON.toJSONBytes(object);
-        log.info("json【{}】完成,序列化后的字节数为【{}】",object,bytes.length);
+        log.info("json序列化对象【{}】完成,序列化后的字节数为【{}】",object,bytes.length);
         return bytes;
     }
 
     @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) {
         T t = JSON.parseObject(bytes, clazz, JSONReader.Feature.SupportClassForName);
-        log.info("json【{}】完成",clazz);
+        log.info("json反序列化类【{}】完成",clazz);
         return t;
     }
 }

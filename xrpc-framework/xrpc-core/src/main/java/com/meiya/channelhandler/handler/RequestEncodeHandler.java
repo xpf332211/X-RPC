@@ -48,7 +48,7 @@ public class RequestEncodeHandler extends MessageToByteEncoder<XrpcRequest> {
         //8个字节的请求id
         byteBuf.writeLong(xrpcRequest.getRequestId());
 
-        //判断是普通请求还是心跳请求
+        //判断是普通请求还是心跳请求 只有普通请求才需要处理请求体
         int payLoadLength = 0;
         if (xrpcRequest.getRequestType() == RequestType.REQUEST.getId()){
             //payLoadLength个字节的请求体
@@ -69,6 +69,9 @@ public class RequestEncodeHandler extends MessageToByteEncoder<XrpcRequest> {
         byteBuf.writeInt(MessageFormatConstant.HEADER_LENGTH + payLoadLength);
         //4.将写指针归位
         byteBuf.writerIndex(index);
-        log.info("id为【{}】的请求经过了报文封装",xrpcRequest.getRequestId());
+        if (xrpcRequest.getRequestType() == RequestType.REQUEST.getId()){
+            log.info("id为【{}】的请求经过了报文封装",xrpcRequest.getRequestId());
+        }
+
     }
 }
