@@ -4,6 +4,7 @@ import com.meiya.channelhandler.ProviderChannelInitializer;
 import com.meiya.detection.HeartbeatDetector;
 import com.meiya.exceptions.NettyException;
 import com.meiya.loadbalancer.LoadBalancer;
+import com.meiya.loadbalancer.impl.RoundRobinLoadBalancer;
 import com.meiya.loadbalancer.impl.ShortestResponseTimeLoadBalancer;
 import com.meiya.registry.Registry;
 import com.meiya.transport.message.XrpcRequest;
@@ -35,6 +36,11 @@ public class XrpcBootstrap {
 
 
     /**
+     * 记录所有需要发现的服务对应的主机
+     * 去重后
+     */
+    public static List<InetSocketAddress> ALL_SERVICE_ADDRESS_LIST = new ArrayList<>();
+    /**
      * 记录所有需要发现的服务
      */
     private static final List<ReferenceConfig<?>> REFERENCE_CONFIG_LIST = new ArrayList<>();
@@ -53,7 +59,7 @@ public class XrpcBootstrap {
     /**
      * 端口
      */
-    public static int PORT = 8083;
+    public static int PORT = 8085;
     /**
      * 注册中心
      */
@@ -128,7 +134,7 @@ public class XrpcBootstrap {
      */
     public XrpcBootstrap registry(RegistryConfig registryConfig) {
         this.registry = registryConfig.getRegistry();
-        LOAD_BALANCER = new ShortestResponseTimeLoadBalancer();
+        LOAD_BALANCER = new RoundRobinLoadBalancer();
         return this;
     }
 
@@ -248,10 +254,8 @@ public class XrpcBootstrap {
         return this;
     }
 
-    /**
-     * 心跳检测
-     */
     public void finish() {
+
         //获取所有需要调用的服务的主机 未去重
         List<InetSocketAddress> addressList = new ArrayList<>();
         for (ReferenceConfig<?> referenceConfig : REFERENCE_CONFIG_LIST) {
@@ -261,6 +265,8 @@ public class XrpcBootstrap {
         }
         //主机 去重
         addressList = new ArrayList<>(new HashSet<>(addressList));
-        HeartbeatDetector.detect(addressList);
+        ALL_SERVICE_ADDRESS_LIST = addressList;
+        HeartbeatDetector.detect(ALL_SERVICE_ADDRESS_LIST);
+
     }
 }

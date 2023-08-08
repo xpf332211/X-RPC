@@ -36,17 +36,6 @@ public class ConsumerApplication {
         String message = messageService.getMessage("Jerry");
         Out.println(message);
 
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        //测试最短响应时间 需要等待treeMap填充好
-        Out.println("========|===|=====|===|=============");
-        MessageService messageService2 = referenceConfig.get();
-        String message2 = messageService2.getMessage("Jerry");
-        Out.println(message2);
 
     }
 }

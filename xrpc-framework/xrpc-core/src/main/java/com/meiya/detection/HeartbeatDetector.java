@@ -71,47 +71,69 @@ public class HeartbeatDetector {
             new Timer().schedule(new ResponseTimerTask(), 0, 2 * 1000);
         });
     }
-    private static class ResponseTimerTask extends TimerTask{
+
+    private static class ResponseTimerTask extends TimerTask {
+        @SneakyThrows
         @Override
         public void run() {
             log.info("一次心跳检测开始");
             XrpcBootstrap.RESPONSE_TIME_CHANNEL_CACHE.clear();
             Map<InetSocketAddress, Channel> channelCache = XrpcBootstrap.CHANNEL_CACHE;
             for (Map.Entry<InetSocketAddress, Channel> entry : channelCache.entrySet()) {
+                InetSocketAddress address = entry.getKey();
                 Channel channel = entry.getValue();
                 //3.1 一次请求的发送 开始计时
                 long start = System.currentTimeMillis();
-                XrpcRequest request = buildHeartbeatRequest();
-                CompletableFuture<Object> completableFuture = new CompletableFuture<>();
-                //对外暴露这个completableFuture
-                XrpcBootstrap.PENDING_REQUEST.put(request.getRequestId(), completableFuture);
-                channel.writeAndFlush(request);
-                log.info("服务调用方,向【{}】主机发送了id为【{}】的心跳请求", entry.getKey(),request.getRequestId());
-                try {
-                    completableFuture.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    throw new RuntimeException(e);
+                //重试机制
+                int maxRetries = 3;
+                int retryCount = 0;
+                boolean success = false;
+                while (retryCount < maxRetries && !success) {
+                    XrpcRequest request = buildHeartbeatRequest();
+                    CompletableFuture<Object> completableFuture = new CompletableFuture<>();
+                    //对外暴露这个completableFuture
+                    XrpcBootstrap.PENDING_REQUEST.put(request.getRequestId(), completableFuture);
+                    channel.writeAndFlush(request);
+                    log.info("服务调用方,向【{}】主机发送了id为【{}】的心跳请求", entry.getKey(), request.getRequestId());
+                    try {
+                        completableFuture.get(1, TimeUnit.SECONDS);
+                        success = true;
+                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                        retryCount++;
+                        log.error("心跳检测时，获取和【{}】的主机连接异常,正在进行第【{}】次重试", address, retryCount);
+                        //睡眠随机数 防止重试风暴
+                        Thread.sleep(10 + new Random().nextInt(20));
+                    }
                 }
-                //3.2 一次响应的接收 结束计时
-                long end = System.currentTimeMillis();
-                long rtt = end - start;
-                log.info("服务调用方心跳检测可用主机【{}】的响应时长为【{}】ms", entry.getKey(), rtt);
-                //3.3记录到treeMap中，方便取得最短响应主机
-                TreeMap<Long, List<Channel>> cache = XrpcBootstrap.RESPONSE_TIME_CHANNEL_CACHE;
-                if (cache.containsKey(rtt)){
-                    cache.get(rtt).add(channel);
-                }else {
-                    //时间重复 地址不能被覆盖 都需要存
-                    List<Channel> channels = new ArrayList<>();
-                    channels.add(channel);
-                    cache.put(rtt,channels);
+                if (success) {
+                    if (retryCount != 0) {
+                        log.info("第【{}】次重试与【{}】主机的连接成功", retryCount, address);
+                    }
+                    //3.2 一次响应的接收 结束计时
+                    long end = System.currentTimeMillis();
+                    long rtt = end - start;
+                    log.info("服务调用方心跳检测可用主机【{}】的响应时长为【{}】ms", entry.getKey(), rtt);
+                    //3.3记录到treeMap中，方便取得最短响应主机
+                    TreeMap<Long, List<Channel>> cache = XrpcBootstrap.RESPONSE_TIME_CHANNEL_CACHE;
+                    if (cache.containsKey(rtt)) {
+                        cache.get(rtt).add(channel);
+                    } else {
+                        List<Channel> channels = new ArrayList<>();
+                        channels.add(channel);
+                        cache.put(rtt, channels);
+                    }
+                } else {
+                    log.info("【{}】次重试均无法获取到和【{}】主机的连接,不再向其发送心跳请求", maxRetries, address);
+                    //服务异常 从所有服务主机列表、channel缓存中删除该服务
+                    XrpcBootstrap.ALL_SERVICE_ADDRESS_LIST.remove(address);
+                    XrpcBootstrap.CHANNEL_CACHE.remove(address);
                 }
             }
-            for (Map.Entry<Long,List<Channel>> entry : XrpcBootstrap.RESPONSE_TIME_CHANNEL_CACHE.entrySet()){
+            for (Map.Entry<Long, List<Channel>> entry : XrpcBootstrap.RESPONSE_TIME_CHANNEL_CACHE.entrySet()) {
                 Long time = entry.getKey();
                 List<Channel> channels = entry.getValue();
-                for (Channel channel : channels){
-                    log.info("【{}】--->【{}】",channel.remoteAddress(),time);
+                for (Channel channel : channels) {
+                    log.info("【{}】--->【{}】", channel.remoteAddress(), time);
                 }
             }
             log.info("一次心跳检测结束");
