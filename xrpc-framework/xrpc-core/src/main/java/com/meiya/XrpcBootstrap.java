@@ -59,7 +59,7 @@ public class XrpcBootstrap {
     /**
      * 端口
      */
-    public static int PORT = 8085;
+    public static int PORT = 8083;
     /**
      * 注册中心
      */
@@ -266,7 +266,7 @@ public class XrpcBootstrap {
         //主机 去重
         addressList = new ArrayList<>(new HashSet<>(addressList));
         ALL_SERVICE_ADDRESS_LIST = addressList;
-        HeartbeatDetector.detect(ALL_SERVICE_ADDRESS_LIST);
+        HeartbeatDetector.detect();
 
     }
 }

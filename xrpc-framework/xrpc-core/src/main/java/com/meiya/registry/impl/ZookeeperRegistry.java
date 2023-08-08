@@ -9,6 +9,7 @@ import com.meiya.registry.Registry;
 import com.meiya.utils.NetUtils;
 import com.meiya.utils.ZookeeperUtils;
 import com.meiya.utils.zk.ZookeeperNode;
+import com.meiya.watcher.OnlineAndOfflineWatcher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.Watcher;
@@ -61,7 +62,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
     public List<InetSocketAddress> seekServiceList(String serviceName) {
         String servicePath = Constant.BATH_PROVIDERS_PATH + '/' + serviceName;
         //获取子节点
-        List<String> childrenService = ZookeeperUtils.getChildren(zooKeeper,servicePath,null);
+        List<String> childrenService = ZookeeperUtils.getChildren(zooKeeper,servicePath,new OnlineAndOfflineWatcher());
         List<InetSocketAddress> inetSocketAddressList = childrenService.stream().map(host -> {
             String[] ipAndPort = host.split(":");
             String ip = ipAndPort[0];

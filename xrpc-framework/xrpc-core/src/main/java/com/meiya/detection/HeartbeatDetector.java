@@ -25,7 +25,8 @@ import java.util.concurrent.*;
  */
 @Slf4j
 public class HeartbeatDetector {
-    public static void detect(List<InetSocketAddress> addressList) {
+    public static void detect() {
+        List<InetSocketAddress> addressList = XrpcBootstrap.ALL_SERVICE_ADDRESS_LIST;
         //1.与需要调用的服务的所有主机地址作连接 并缓存
         for (InetSocketAddress address : addressList) {
             Channel channel = XrpcBootstrap.CHANNEL_CACHE.get(address);
