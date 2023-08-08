@@ -33,7 +33,7 @@ public class ProviderApplication {
                 .application("first-provider")
                 .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
                 .protocol(new ProtocolConfig("jdk"))
-                .publish(messageServiceConfig)
+
                 .publish(productServiceConfig)
                 .start();
         

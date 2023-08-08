@@ -21,9 +21,9 @@ public class ResponseCompleteHandler extends SimpleChannelInboundHandler<XrpcRes
         CompletableFuture<Object> future = XrpcBootstrap.PENDING_REQUEST.get(xrpcResponse.getRequestId());
         if (xrpcResponse.getResponseCode() == ResponseCode.SUCCESS.getCode()){
             responseContext = xrpcResponse.getResponseBody().getResponseContext();
-
+            log.info("id为【{}】的响应即将返回调用结果！",xrpcResponse.getRequestId());
         }
-        log.info("id为【{}】的响应即将返回调用结果！",xrpcResponse.getRequestId());
+
         future.complete(responseContext);
     }
 }

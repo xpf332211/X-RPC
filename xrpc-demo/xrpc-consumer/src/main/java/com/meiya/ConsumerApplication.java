@@ -28,15 +28,24 @@ public class ConsumerApplication {
                 .reference(referenceConfig)
                 .reference(referenceConfig1)
                 .serialize("json")
-                .compress("gzip");
+                .compress("gzip")
+                .finish();
 
         //获取代理对象
-//        MessageService messageService = referenceConfig.get();
-//        String message = messageService.getMessage("Jerry");
-//        Out.println(message);
+        MessageService messageService = referenceConfig.get();
+        String message = messageService.getMessage("Jerry");
+        Out.println(message);
 
-        HeartbeatDetector.detect(MessageService.class.getName());
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
+        //测试最短响应时间 需要等待treeMap填充好
+        MessageService messageService2 = referenceConfig.get();
+        String message2 = messageService2.getMessage("Jerry");
+        Out.println(message2);
 
     }
 }
