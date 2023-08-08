@@ -82,7 +82,7 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
         //4.写出请求
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         //对外暴露这个completableFuture
-        XrpcBootstrap.PENDING_REQUEST.put(XrpcBootstrap.ID_GENERATOR.getId(), completableFuture);
+        XrpcBootstrap.PENDING_REQUEST.put(requestId, completableFuture);
         channel.writeAndFlush(xrpcRequest)
                 .addListener((ChannelFutureListener) future -> {
                     log.info("服务调用方发送了id为【{}】的请求：【{}】", requestId, xrpcRequest.toString());

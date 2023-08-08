@@ -43,6 +43,7 @@ public class ConsumerApplication {
         }
 
         //测试最短响应时间 需要等待treeMap填充好
+        Out.println("========|===|=====|===|=============");
         MessageService messageService2 = referenceConfig.get();
         String message2 = messageService2.getMessage("Jerry");
         Out.println(message2);

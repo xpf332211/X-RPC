@@ -4,6 +4,7 @@ import com.meiya.XrpcBootstrap;
 import com.meiya.loadbalancer.AbstractLoadBalancer;
 import com.meiya.loadbalancer.Selector;
 import io.netty.channel.Channel;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Map;
 /**
  * @author xiaopengfei
  */
+@Slf4j
 public class ShortestResponseTimeLoadBalancer extends AbstractLoadBalancer {
     @Override
     protected Selector initSelector(List<InetSocketAddress> serviceList) {
@@ -33,22 +35,26 @@ public class ShortestResponseTimeLoadBalancer extends AbstractLoadBalancer {
             Map.Entry<Long, List<Channel>> entry = XrpcBootstrap.RESPONSE_TIME_CHANNEL_CACHE.firstEntry();
             //如果第一次心跳检测还未完成就需要调用 则从可用主机中返回第一个
             if (entry == null){
+                if (log.isDebugEnabled()){
+                    log.debug("第一次心跳检测还未完成，不选取最短响应的主机");
+                }
                 return serviceList.get(0);
             }
             List<Channel> channels = entry.getValue();
-            //集合长度为1 直接返回主机
-            if (channels.size() == 1){
-                return (InetSocketAddress) channels.get(0);
-            }else if (channels.size() > 1){
-                //集合长度大于1 选择一个发布了该服务的主机
-                for (Channel channel : channels){
-                    InetSocketAddress inetSocketAddress = (InetSocketAddress)channel;
-                    if (serviceList.contains(inetSocketAddress)){
-                        return inetSocketAddress;
+            //对最短响应的所有主机进行遍历，若没有一台主机发布了该服务 则从可用主机中返回第一个
+            for (Channel channel : channels){
+                InetSocketAddress inetSocketAddress = (InetSocketAddress)channel.remoteAddress();
+                if (serviceList.contains(inetSocketAddress)){
+                    if (log.isDebugEnabled()){
+                        log.debug("根据心跳检测的结果，选取了支持该服务的最短响应的主机");
                     }
+                    return inetSocketAddress;
                 }
             }
-            throw new RuntimeException("未发现可用的主机！");
+            if (log.isDebugEnabled()){
+                log.debug("最短响应的主机不支持该服务，将从可用主机中选择一台");
+            }
+            return serviceList.get(0);
         }
     }
 }

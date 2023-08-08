@@ -101,6 +101,7 @@ public class HeartbeatDetector {
                 if (cache.containsKey(rtt)){
                     cache.get(rtt).add(channel);
                 }else {
+                    //时间重复 地址不能被覆盖 都需要存
                     List<Channel> channels = new ArrayList<>();
                     channels.add(channel);
                     cache.put(rtt,channels);
