@@ -27,7 +27,7 @@ public class OnlineAndOfflineWatcher implements Watcher {
                 log.debug("感知到服务【{}】下有节点上下线,将重新拉取服务", event.getPath());
             }
             String serviceName = getServiceName(event.getPath());
-            Registry registry = XrpcBootstrap.getInstance().getRegistry();
+            Registry registry = XrpcBootstrap.getInstance().getConfiguration().getRegistry();
             //获取感知服务下的所有子节点的地址
             List<InetSocketAddress> addressList = registry.seekServiceList(serviceName);
             //可能增加了节点 此时ALL_SERVICE_ADDRESS_LIST和CHANNEL_CACHE中都没有该节点
@@ -51,7 +51,7 @@ public class OnlineAndOfflineWatcher implements Watcher {
                 }
             }
             //负载均衡缓存的主机列表未更新 需要重新负载均衡根据拉取的最新的服务列表 构建新的selector并加入缓存
-            XrpcBootstrap.LOAD_BALANCER.reLoadBalance(serviceName,addressList);
+            XrpcBootstrap.getInstance().getConfiguration().getLoadBalancer().reLoadBalance(serviceName,addressList);
         }
     }
 

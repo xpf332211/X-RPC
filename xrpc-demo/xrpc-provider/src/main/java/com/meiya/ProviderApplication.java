@@ -16,7 +16,7 @@ public class ProviderApplication {
     public static void main(String[] args) throws UnsupportedEncodingException {
 
 
-        //封装要发布的服务 已经修改成包扫描 + 注解了
+        //封装要发布的服务 已经修改成包扫描+注解了
 //        ServiceConfig messageServiceConfig = new ServiceConfig();
 //        messageServiceConfig.setInterface(MessageService.class);
 //        messageServiceConfig.setRef(new MessageServiceImpl());
@@ -27,9 +27,6 @@ public class ProviderApplication {
         //应用名称 注册中心 协议
         //发布服务
         XrpcBootstrap.getInstance()
-                .application("first-provider")
-                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .protocol(new ProtocolConfig("jdk"))
                 .scan("com.meiya")
                 .start();
         

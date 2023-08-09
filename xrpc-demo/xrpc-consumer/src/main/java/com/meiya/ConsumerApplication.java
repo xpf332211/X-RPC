@@ -23,12 +23,9 @@ public class ConsumerApplication {
          * 4.发送请求，携带信息，获得结果
          */
         XrpcBootstrap.getInstance()
-                .application("first-consumer")
-                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
                 .reference(referenceConfig)
                 .reference(referenceConfig1)
                 .serialize("json")
-                .compress("gzip")
                 .finish();
 
         //获取代理对象

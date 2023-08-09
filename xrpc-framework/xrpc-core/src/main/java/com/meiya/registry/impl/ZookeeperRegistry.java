@@ -48,7 +48,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
         }
         //创建服务对应的子节点 为临时节点 名称为ip:port
         //服务提供方的端口先直接定义好 还需要一个获取ip的方法
-        String childServiceName = providersPath + '/' + NetUtils.getIp() + ':' + XrpcBootstrap.PORT;
+        String childServiceName = providersPath + '/' + NetUtils.getIp() + ':' + XrpcBootstrap.getInstance().getConfiguration().getPort();
         if (!ZookeeperUtils.exists(zooKeeper,childServiceName,null)){
             ZookeeperNode zookeeperNode = new ZookeeperNode(childServiceName,null);
             ZookeeperUtils.createNode(zooKeeper,zookeeperNode,null,null, CreateMode.EPHEMERAL);

@@ -22,7 +22,7 @@ public abstract class AbstractLoadBalancer implements LoadBalancer{
         //从缓存中获取服务对应的选择器
         Selector selector = SELECTOR_CACHE.get(serviceName);
         if (selector == null){
-            List<InetSocketAddress> serviceList = XrpcBootstrap.getInstance().getRegistry().seekServiceList(serviceName);
+            List<InetSocketAddress> serviceList = XrpcBootstrap.getInstance().getConfiguration().getRegistry().seekServiceList(serviceName);
             selector = initSelector(serviceList);
             SELECTOR_CACHE.put(serviceName,selector);
         }
