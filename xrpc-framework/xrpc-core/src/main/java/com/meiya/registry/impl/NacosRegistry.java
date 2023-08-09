@@ -15,7 +15,7 @@ public class NacosRegistry extends AbstractRegistry {
     }
 
     @Override
-    public void register(ServiceConfig<?> serviceConfig) {
+    public void register(ServiceConfig serviceConfig) {
 
     }
 

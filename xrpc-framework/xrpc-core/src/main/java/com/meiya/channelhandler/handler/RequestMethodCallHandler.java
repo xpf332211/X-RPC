@@ -64,7 +64,7 @@ public class RequestMethodCallHandler extends SimpleChannelInboundHandler<XrpcRe
         Class<?> returnType = requestPayload.getReturnType();
         //通过接口名获取到对应的实现类 spring中可以用getBean,传入一个接口返回一个实现类
         //此处我们自定义了一个全局的服务列表
-        ServiceConfig<?> serviceConfig = XrpcBootstrap.SERVICE_MAP.get(interfaceName);
+        ServiceConfig serviceConfig = XrpcBootstrap.SERVICE_MAP.get(interfaceName);
         Object refImpl = serviceConfig.getRef();
         //反射调用
         Object returnValue = null;

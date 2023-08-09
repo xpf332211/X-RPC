@@ -1,6 +1,6 @@
 package com.meiya.utils;
 
-import com.meiya.Constant;
+import com.meiya.constant.ZookeeperConstant;
 import com.meiya.exceptions.DiscoveryException;
 import com.meiya.exceptions.ZookeeperException;
 import com.meiya.utils.zk.ZookeeperNode;
@@ -51,8 +51,8 @@ public class ZookeeperUtils {
      */
     public static ZooKeeper createZookeeper() {
         //定义默认连接参数
-        String connectString = Constant.DEFAULT_ZK_CONNECT;
-        int sessionTimeout = Constant.DEFAULT_ZK_TIMEOUT;
+        String connectString = ZookeeperConstant.DEFAULT_ZK_CONNECT;
+        int sessionTimeout = ZookeeperConstant.DEFAULT_ZK_TIMEOUT;
         return createZookeeper(connectString, sessionTimeout);
 
     }
@@ -63,7 +63,7 @@ public class ZookeeperUtils {
      * @return zk实例
      */
     public static ZooKeeper createZookeeper(String connectString){
-        int sessionTimeout = Constant.DEFAULT_ZK_TIMEOUT;
+        int sessionTimeout = ZookeeperConstant.DEFAULT_ZK_TIMEOUT;
         return createZookeeper(connectString,sessionTimeout);
     }
 
@@ -105,7 +105,7 @@ public class ZookeeperUtils {
      * @param zooKeeper zk实例
      * @param node 目录节点
      * @param watcher watcher
-     * @return
+     * @return 成功与否
      */
     public static boolean createNode(ZooKeeper zooKeeper,ZookeeperNode node,Watcher watcher){
         ArrayList<ACL> acl = ZooDefs.Ids.OPEN_ACL_UNSAFE;

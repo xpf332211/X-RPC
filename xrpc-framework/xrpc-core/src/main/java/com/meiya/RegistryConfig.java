@@ -1,5 +1,6 @@
 package com.meiya;
 
+import com.meiya.constant.ZookeeperConstant;
 import com.meiya.exceptions.RegistryException;
 import com.meiya.registry.Registry;
 import com.meiya.registry.impl.NacosRegistry;
@@ -31,10 +32,10 @@ public class RegistryConfig {
         }
         if (Objects.equals(registryMap.get(type), "zookeeper")){
             String host = getTypeOrHost(connect, false);
-            return new ZookeeperRegistry(host,Constant.DEFAULT_ZK_TIMEOUT);
+            return new ZookeeperRegistry(host, ZookeeperConstant.DEFAULT_ZK_TIMEOUT);
         }else if (Objects.equals(registryMap.get(type), "nacos")){
             String host = getTypeOrHost(connect, false);
-            return new NacosRegistry(host,Constant.DEFAULT_ZK_TIMEOUT);
+            return new NacosRegistry(host, ZookeeperConstant.DEFAULT_ZK_TIMEOUT);
         }else {
             throw new RegistryException("未匹配到指定的注册中心!");
         }

@@ -1,23 +1,20 @@
 package com.meiya.registry.impl;
 
-import com.meiya.Constant;
+import com.meiya.constant.ZookeeperConstant;
 import com.meiya.ServiceConfig;
 import com.meiya.XrpcBootstrap;
 import com.meiya.exceptions.DiscoveryException;
 import com.meiya.registry.AbstractRegistry;
-import com.meiya.registry.Registry;
 import com.meiya.utils.NetUtils;
 import com.meiya.utils.ZookeeperUtils;
 import com.meiya.utils.zk.ZookeeperNode;
 import com.meiya.watcher.OnlineAndOfflineWatcher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author xiaopf
@@ -35,7 +32,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
 
 
     @Override
-    public void register(ServiceConfig<?> serviceConfig) {
+    public void register(ServiceConfig serviceConfig) {
         if (serviceConfig.getInterface() == null){
             throw new NullPointerException("请配置需要发布的服务接口");
         }
@@ -44,7 +41,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
         }
         //创建服务对应的根节点 为持久节点
         String serviceName = serviceConfig.getInterface().getName();
-        String providersPath = Constant.BATH_PROVIDERS_PATH + '/' + serviceName;
+        String providersPath = ZookeeperConstant.BATH_PROVIDERS_PATH + '/' + serviceName;
         if (!ZookeeperUtils.exists(zooKeeper,providersPath,null)){
             ZookeeperNode zookeeperNode = new ZookeeperNode(providersPath,null);
             ZookeeperUtils.createNode(zooKeeper,zookeeperNode,null);
@@ -60,7 +57,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
 
     @Override
     public List<InetSocketAddress> seekServiceList(String serviceName) {
-        String servicePath = Constant.BATH_PROVIDERS_PATH + '/' + serviceName;
+        String servicePath = ZookeeperConstant.BATH_PROVIDERS_PATH + '/' + serviceName;
         //获取子节点
         List<String> childrenService = ZookeeperUtils.getChildren(zooKeeper,servicePath,new OnlineAndOfflineWatcher());
         List<InetSocketAddress> inetSocketAddressList = childrenService.stream().map(host -> {

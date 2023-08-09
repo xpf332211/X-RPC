@@ -1,10 +1,10 @@
-package com.meiya;
+package com.meiya.constant;
 
 /**
  * @author xiaopf
  */
 
-public class Constant {
+public class ZookeeperConstant {
     /**
      * zk的默认连接地址
      */

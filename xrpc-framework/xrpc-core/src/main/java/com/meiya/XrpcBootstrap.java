@@ -1,14 +1,15 @@
 package com.meiya;
 
+import com.meiya.annotation.XrpcApi;
 import com.meiya.channelhandler.ProviderChannelInitializer;
 import com.meiya.detection.HeartbeatDetector;
 import com.meiya.exceptions.NettyException;
 import com.meiya.loadbalancer.LoadBalancer;
 import com.meiya.loadbalancer.impl.RoundRobinLoadBalancer;
-import com.meiya.loadbalancer.impl.ShortestResponseTimeLoadBalancer;
 import com.meiya.registry.Registry;
 import com.meiya.transport.message.XrpcRequest;
 import com.meiya.utils.IdGenerator;
+import com.meiya.utils.FileUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -97,10 +99,10 @@ public class XrpcBootstrap {
      */
     public static final Map<InetSocketAddress, Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(16);
     /**
-     * 服务列表
+     * 服务列表 用于反射调用获得结果 类似保存了所有发布的服务的实例对象的一个容器
      * key--> interface的全限名 value--> ServiceConfig
      */
-    public static final Map<String, ServiceConfig<?>> SERVICE_MAP = new ConcurrentHashMap<>(16);
+    public static final Map<String, ServiceConfig> SERVICE_MAP = new ConcurrentHashMap<>(16);
     /**
      * XrpcBootstrap是单例 采用饿汉式方法创建
      */
@@ -269,4 +271,56 @@ public class XrpcBootstrap {
         HeartbeatDetector.detect();
 
     }
+
+    /**
+     * 包扫描 发布服务
+     * @param packageName 包名称
+     * @return 实例对象
+     */
+    public XrpcBootstrap scan(String packageName) {
+        //根据包名获取其下类全限定名
+        List<String> allClassNames = FileUtils.getAllClassNamesByPackageName(packageName);
+        //筛选标识了XrpcApi注解的实现类，获得其Class对象
+        List<? extends Class<?>> classes = allClassNames.stream()
+                .map(className -> {
+                    try {
+                        return Class.forName(className);
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .filter(clazz -> clazz.getAnnotation(XrpcApi.class) != null)
+                .toList();
+        //获取实现类Class对象的所有接口（一个实现类可能有多个接口）
+        //获取实现类Class对象的一个实例
+        for (Class<?> clazz : classes) {
+            Class<?>[] interfaces = clazz.getInterfaces();
+            Object instance = null;
+            try {
+                //这边只支持无参构造器 通过Class对象获得一个类的实例
+                instance = clazz.getConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+            //封装serviceConfig对象 发布
+            for (Class<?> anInterface : interfaces) {
+                ServiceConfig<?> serviceConfig = new ServiceConfig<>();
+                serviceConfig.setInterface(anInterface);
+                serviceConfig.setRef(instance);
+                //发布服务
+                this.publish(serviceConfig);
+                if (log.isDebugEnabled()) {
+                    log.info("通过包扫描发布了服务【{}】",anInterface);
+                }
+            }
+        }
+        return this;
+    }
+
+
+
+
+
+
 }
