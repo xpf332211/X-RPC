@@ -29,6 +29,11 @@ public abstract class AbstractLoadBalancer implements LoadBalancer{
         return selector.loadBalance();
     }
 
+    @Override
+    public synchronized void reLoadBalance(String serviceName,List<InetSocketAddress> addressList) {
+        SELECTOR_CACHE.put(serviceName,initSelector(addressList));
+    }
+
     /**
      *  由子类返回一个selector实现类的实例
      * @param serviceList new实例时需要的参数

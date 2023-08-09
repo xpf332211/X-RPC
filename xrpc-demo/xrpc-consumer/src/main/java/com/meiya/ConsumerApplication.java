@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author xiaopf
  */
 public class ConsumerApplication {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         //获取一个reference 把配置项封装
         ReferenceConfig<MessageService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(MessageService.class);
@@ -32,9 +32,16 @@ public class ConsumerApplication {
                 .finish();
 
         //获取代理对象
-        MessageService messageService = referenceConfig.get();
-        String message = messageService.getMessage("Jerry");
-        Out.println(message);
+       while (true){
+           Thread.sleep(1 * 1000);
+           MessageService messageService = referenceConfig.get();
+           String message = messageService.getMessage("Jerry");
+       }
+
+
+
+
+
 
 
     }

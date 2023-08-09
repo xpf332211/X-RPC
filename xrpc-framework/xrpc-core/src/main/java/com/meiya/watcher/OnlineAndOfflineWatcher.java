@@ -50,7 +50,8 @@ public class OnlineAndOfflineWatcher implements Watcher {
                     XrpcBootstrap.CHANNEL_CACHE.remove(entry.getKey());
                 }
             }
-
+            //负载均衡缓存的主机列表未更新 需要重新负载均衡根据拉取的最新的服务列表 构建新的selector并加入缓存
+            XrpcBootstrap.LOAD_BALANCER.reLoadBalance(serviceName,addressList);
         }
     }
 

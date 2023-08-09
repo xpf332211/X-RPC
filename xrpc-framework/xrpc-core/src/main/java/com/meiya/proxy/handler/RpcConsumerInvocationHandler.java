@@ -49,7 +49,7 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    public Object invoke(Object proxy, Method method, Object[] args){
         //1.封装请求
         RequestPayload payload = RequestPayload.builder()
                 .interfaceName(interfaceRef.getName())
@@ -91,7 +91,12 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
         XrpcBootstrap.REQUEST_THREAD_LOCAL.remove();
         //5.获取响应的结果
         //阻塞等待其他地方处理这个completableFuture
-        Object result = completableFuture.get(10, TimeUnit.SECONDS);
+        Object result = null;
+        try {
+            result = completableFuture.get(10, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            log.error("无法获取到与【{}】主机的连接,即将断开与其的连接",address,e);
+        }
         log.info("id为【{}】的请求得到调用结果为【{}】", requestId, result);
         return result;
     }
@@ -120,6 +125,7 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
                         }
                         if (!future.isSuccess()) {
                             //异常处理
+                            log.error("无法获取到和【{}】服务提供方的连接",address);
                             channelCompletableFuture.completeExceptionally(future.cause());
                         }
                     });
