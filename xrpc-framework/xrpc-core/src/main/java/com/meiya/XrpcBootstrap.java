@@ -251,7 +251,7 @@ public class XrpcBootstrap {
     public XrpcBootstrap compress(String compressType) {
 
         if (StringUtils.isNotEmpty(compressType)) {
-            configuration.setCompressorType(compressType);
+            configuration.setCompressType(compressType);
         }
         return this;
     }

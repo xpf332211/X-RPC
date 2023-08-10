@@ -4,25 +4,19 @@
 <configuration>
 
 
-    <port>8090</port>
-
-    <applicationName>app-default-name</applicationName>
+    <applicationName>app-consumer-name</applicationName>
 
     <registryConfig connect="zookeeper://127.0.0.1:2181"/>
 
-<!--    三选一  优先级:自定义class > 带参数 > 文本 -->
+    <!--    三选一  优先级:自定义class > 带参数 > 文本 -->
     <serializeType type="hessian"/>
     <serializeType>json</serializeType>
-    <serializer class="com.meiya.serialize.impl.HessianSerializer" name="hessian" num="4"/>
+    <serializer class="com.meiya.serializer.impl.HessianSerializer2" name="hessian2" num="4"/>
 
     <compressType>gzip</compressType>
-    <compressor class="com.meiya.compress.impl.GzipCompressor" name="gzip" num="4"/>
-    <compressType>gzip</compressType>
-
-    <loadBalanceType>shortestResponseTime</loadBalanceType>
 
     <loadBalancer class="com.meiya.loadbalancer.impl.ShortestResponseTimeLoadBalancer"/>
-    <loadBalanceType>shortestResponseTime</loadBalanceType>  <!--未实现-->
+
 
     <idGenerator class="com.meiya.utils.IdGenerator" dataCenterId="3" machineId="4"/>
 </configuration>

@@ -18,11 +18,11 @@ public class SerializerFactory {
     /**
      * serializerWrapper 缓存 通过type取
      */
-    private static final Map<String,SerializerWrapper> SERIALIZER_CACHE_TYPE = new ConcurrentHashMap<>(4);
+    public static final Map<String,SerializerWrapper> SERIALIZER_CACHE_TYPE = new ConcurrentHashMap<>(4);
     /**
      * serializerWrapper 缓存 通过code取
      */
-    private static final Map<Byte,SerializerWrapper> SERIALIZER_CACHE_CODE = new ConcurrentHashMap<>(4);
+    public static final Map<Byte,SerializerWrapper> SERIALIZER_CACHE_CODE = new ConcurrentHashMap<>(4);
     static {
         SerializerWrapper jdkWrapper = new SerializerWrapper((byte) 1, "jdk", new JdkSerializer());
         SerializerWrapper jsonWrapper = new SerializerWrapper((byte) 2, "json", new JsonSerializer());

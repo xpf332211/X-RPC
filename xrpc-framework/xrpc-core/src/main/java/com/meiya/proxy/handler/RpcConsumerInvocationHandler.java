@@ -63,7 +63,7 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
         //简单工厂+包装类获取序列化方式 byte/String
         byte serializerCode = SerializerFactory.getSerializerCode(XrpcBootstrap.getInstance().getConfiguration().getSerializeType());
         //简单工厂+包装类获取压缩方式 byte/String
-        byte compressorCode = CompressorFactory.getCompressorCode(XrpcBootstrap.getInstance().getConfiguration().getCompressorType());
+        byte compressorCode = CompressorFactory.getCompressorCode(XrpcBootstrap.getInstance().getConfiguration().getCompressType());
         XrpcRequest xrpcRequest = XrpcRequest.builder()
                 .requestId(requestId)
                 .compressType(compressorCode)
@@ -77,7 +77,6 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
         log.info("服务调用方,选取了服务【{}】的可用主机【{}】", interfaceRef.getName(), address);
         //3.服务调用方启动netty 连接服务提供方 发送需要调用的服务的信息
         Channel channel = getAvailableChannel(address);
-
 
         //4.写出请求
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();

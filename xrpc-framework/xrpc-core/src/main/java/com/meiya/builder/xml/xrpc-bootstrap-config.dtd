@@ -16,14 +16,53 @@
                limitations under the License.
 
         -->
-        <!ELEMENT configuration (port?,applicationName?,registryConfig?
-                )>
+        <!ELEMENT configuration ANY>
 
-        <!ELEMENT port EMPTY>
-        <!ELEMENT applicationName EMPTY>
-        <!ELEMENT registryConfig EMPTY>
+        <!ELEMENT port ANY>
+
+        <!ELEMENT applicationName ANY>
+
+        <!ELEMENT registryConfig ANY>
         <!ATTLIST registryConfig
                 connect CDATA #REQUIRED>
+
+        <!ELEMENT serializeType (#PCDATA)>
+        <!ATTLIST serializeType
+                type CDATA #IMPLIED>
+
+        <!ELEMENT serializer ANY>
+        <!ATTLIST serializer
+                class CDATA #REQUIRED
+                name CDATA #REQUIRED
+                num CDATA #REQUIRED>
+
+        <!ELEMENT compressType (#PCDATA)>
+        <!ATTLIST compressType
+                type CDATA #IMPLIED>
+
+        <!ELEMENT compressor ANY>
+        <!ATTLIST compressor
+                class CDATA #REQUIRED
+                name CDATA #REQUIRED
+                num CDATA #REQUIRED>
+
+        <!ELEMENT loadBalanceType (#PCDATA)>
+        <!ATTLIST loadBalanceType
+                type CDATA #IMPLIED>
+
+        <!ELEMENT loadBalancer ANY>
+        <!ATTLIST loadBalancer
+                class CDATA #REQUIRED>
+
+        <!ELEMENT idGenerator ANY>
+        <!ATTLIST idGenerator
+                class CDATA #REQUIRED
+                dataCenterId CDATA #REQUIRED
+                machineId CDATA #REQUIRED>
+
+
+
+
 
 
 

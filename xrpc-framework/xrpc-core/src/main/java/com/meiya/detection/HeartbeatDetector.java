@@ -145,7 +145,7 @@ public class HeartbeatDetector {
         private XrpcRequest buildHeartbeatRequest() {
             long requestId = XrpcBootstrap.getInstance().getConfiguration().getIdGenerator().getId();
             byte serializerCode = SerializerFactory.getSerializerCode(XrpcBootstrap.getInstance().getConfiguration().getSerializeType());
-            byte compressorCode = CompressorFactory.getCompressorCode(XrpcBootstrap.getInstance().getConfiguration().getCompressorType());
+            byte compressorCode = CompressorFactory.getCompressorCode(XrpcBootstrap.getInstance().getConfiguration().getCompressType());
             return XrpcRequest.builder()
                     .requestId(requestId)
                     .compressType(compressorCode)

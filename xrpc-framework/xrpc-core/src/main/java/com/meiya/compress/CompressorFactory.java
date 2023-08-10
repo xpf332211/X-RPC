@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 public class CompressorFactory {
-    private static final Map<String,CompressorWrapper> COMPRESSOR_CACHE_TYPE = new ConcurrentHashMap<>(4);
-    private static final Map<Byte,CompressorWrapper> COMPRESSOR_CACHE_CODE = new ConcurrentHashMap<>(4);
+    public static final Map<String,CompressorWrapper> COMPRESSOR_CACHE_TYPE = new ConcurrentHashMap<>(4);
+    public static final Map<Byte,CompressorWrapper> COMPRESSOR_CACHE_CODE = new ConcurrentHashMap<>(4);
     static {
         CompressorWrapper gzip = new CompressorWrapper((byte) 1, "gzip", new GzipCompressor());
         COMPRESSOR_CACHE_TYPE.put("gzip",gzip);
