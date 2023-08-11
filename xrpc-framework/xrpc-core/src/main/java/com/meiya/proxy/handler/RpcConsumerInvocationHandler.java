@@ -1,7 +1,7 @@
 package com.meiya.proxy.handler;
 
-import com.meiya.NettyBootstrap;
-import com.meiya.XrpcBootstrap;
+import com.meiya.bootstrap.NettyBootstrap;
+import com.meiya.bootstrap.XrpcBootstrap;
 import com.meiya.compress.CompressorFactory;
 import com.meiya.enumeration.RequestType;
 import com.meiya.exceptions.DiscoveryException;
@@ -10,9 +10,7 @@ import com.meiya.registry.Registry;
 import com.meiya.serialize.SerializerFactory;
 import com.meiya.transport.message.RequestPayload;
 import com.meiya.transport.message.XrpcRequest;
-import com.meiya.utils.NetUtils;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;

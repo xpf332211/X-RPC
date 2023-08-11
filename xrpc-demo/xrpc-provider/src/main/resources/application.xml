@@ -6,7 +6,7 @@
 
     <port>8090</port>
     <applicationName>app-provider-name</applicationName>
-    <serializer class="com.meiya.serializer.impl.HessianSerializer2" name="hessian2" num="4"/>
+
 
 
 

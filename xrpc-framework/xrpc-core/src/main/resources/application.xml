@@ -19,10 +19,9 @@
     <compressor class="com.meiya.compress.impl.GzipCompressor" name="gzip" num="4"/>
     <compressType>gzip</compressType>
 
-    <loadBalanceType>shortestResponseTime</loadBalanceType>
 
-    <loadBalancer class="com.meiya.loadbalancer.impl.ShortestResponseTimeLoadBalancer"/>
-    <loadBalanceType>shortestResponseTime</loadBalanceType>  <!--未实现-->
+
+
 
     <idGenerator class="com.meiya.utils.IdGenerator" dataCenterId="3" machineId="4"/>
 </configuration>

@@ -1,6 +1,6 @@
 package com.meiya.channelhandler.handler;
 
-import com.meiya.XrpcBootstrap;
+import com.meiya.bootstrap.XrpcBootstrap;
 import com.meiya.enumeration.ResponseCode;
 import com.meiya.transport.message.XrpcResponse;
 import io.netty.channel.ChannelHandlerContext;

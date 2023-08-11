@@ -1,7 +1,7 @@
 package com.meiya.watcher;
 
-import com.meiya.NettyBootstrap;
-import com.meiya.XrpcBootstrap;
+import com.meiya.bootstrap.NettyBootstrap;
+import com.meiya.bootstrap.XrpcBootstrap;
 import com.meiya.registry.Registry;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;

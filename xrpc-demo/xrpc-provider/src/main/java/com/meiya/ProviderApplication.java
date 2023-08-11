@@ -1,8 +1,7 @@
 package com.meiya;
 
-import com.meiya.impl.MessageServiceImpl;
+import com.meiya.bootstrap.XrpcBootstrap;
 
-import com.meiya.impl.ProductServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.UnsupportedEncodingException;

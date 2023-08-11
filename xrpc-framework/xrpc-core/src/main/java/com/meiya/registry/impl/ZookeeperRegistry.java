@@ -1,8 +1,8 @@
 package com.meiya.registry.impl;
 
 import com.meiya.constant.ZookeeperConstant;
-import com.meiya.ServiceConfig;
-import com.meiya.XrpcBootstrap;
+import com.meiya.config.ServiceConfig;
+import com.meiya.bootstrap.XrpcBootstrap;
 import com.meiya.exceptions.DiscoveryException;
 import com.meiya.registry.AbstractRegistry;
 import com.meiya.utils.NetUtils;

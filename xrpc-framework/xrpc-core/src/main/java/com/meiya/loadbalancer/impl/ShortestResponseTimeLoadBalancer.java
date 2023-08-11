@@ -1,6 +1,6 @@
 package com.meiya.loadbalancer.impl;
 
-import com.meiya.XrpcBootstrap;
+import com.meiya.bootstrap.XrpcBootstrap;
 import com.meiya.loadbalancer.AbstractLoadBalancer;
 import com.meiya.loadbalancer.Selector;
 import io.netty.channel.Channel;

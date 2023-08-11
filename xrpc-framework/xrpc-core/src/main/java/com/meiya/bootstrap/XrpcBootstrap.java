@@ -1,7 +1,11 @@
-package com.meiya;
+package com.meiya.bootstrap;
 
 import com.meiya.annotation.XrpcApi;
 import com.meiya.channelhandler.ProviderChannelInitializer;
+import com.meiya.config.ReferenceConfig;
+import com.meiya.config.RegistryConfig;
+import com.meiya.config.ServiceConfig;
+import com.meiya.config.XrpcBootstrapConfiguration;
 import com.meiya.detection.HeartbeatDetector;
 import com.meiya.exceptions.NettyException;
 import com.meiya.loadbalancer.LoadBalancer;
@@ -34,7 +38,7 @@ public class XrpcBootstrap {
      * 配置中心
      */
     @Getter
-    private XrpcBootstrapConfiguration configuration;
+    private final XrpcBootstrapConfiguration configuration;
 
     /**
      * 记录所有需要发现的服务对应的主机

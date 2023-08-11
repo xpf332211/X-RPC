@@ -1,16 +1,16 @@
-package com.meiya;
+package com.meiya.config.loader;
 
 import com.meiya.compress.Compressor;
 import com.meiya.compress.CompressorFactory;
-import com.meiya.compress.CompressorWrapper;
+
+import com.meiya.config.RegistryConfig;
+import com.meiya.config.XrpcBootstrapConfiguration;
 import com.meiya.loadbalancer.LoadBalancer;
-import com.meiya.loadbalancer.impl.RoundRobinLoadBalancer;
-import com.meiya.registry.Registry;
+import com.meiya.loadbalancer.LoadBalancerFactory;
 import com.meiya.serialize.Serializer;
 import com.meiya.serialize.SerializerFactory;
-import com.meiya.serialize.SerializerWrapper;
+
 import com.meiya.utils.IdGenerator;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -25,87 +25,17 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * 代码配置 --> xml配置 --> spi配置 --> 默认配置
- *
- * @author xiaopengfei
+ * @author xiaopf
  */
 @Slf4j
-@Data
-public class XrpcBootstrapConfiguration {
-    /**
-     * 服务提供方 主机端口
-     */
-    private int port;
-    /**
-     * 服务名称
-     */
-    private String applicationName;
-    /**
-     * 序列化类型 默认为jdk
-     */
-    private String serializeType;
-
-    /**
-     * 压缩类型 默认为gzip
-     */
-    private String compressType;
-    /**
-     * 注册中心连接地址 默认为zk连接地址
-     */
-    private RegistryConfig registryConfig;
-    /**
-     * 注册中心实例 默认为zk 在构造器中实例化赋值
-     */
-    private Registry registry;
-    /**
-     * id生成器
-     */
-    private IdGenerator idGenerator = new IdGenerator(2, 10);
-    /**
-     * 负载均衡器
-     */
-    private LoadBalancer loadBalancer = new RoundRobinLoadBalancer();
-
-    /**
-     * 在XrpcBootstrap的构造器初始化时，会new Configuration初始化 依次读取 默认、spi、xml，后者若有值会覆盖前者
-     * 初始化后Configuration初始化，在XrpcBootstrap也初始化完毕，调用其实例参数配置方法后，会覆盖先前的配置
-     * 这样便实现了按优先级读取  代码配置 --> xml配置 --> spi配置 --> 默认配置
-     */
-    public XrpcBootstrapConfiguration() {
-
-        //加载默认配置
-        loadFromDefault();
-        System.out.println(this);
-        //todo 加载spi配置
-
-        //加载xml配置
-        loadFromXml();
-        System.out.println(this);
-
-    }
-
-    /**
-     * 加载默认配置
-     */
-    private void loadFromDefault() {
-        //注意：register不能在成员变量中赋值！否则会有问题 且先赋值registryConfig后才能赋值registry
-        this.setPort(8848);
-        this.setApplicationName("default-appName");
-        this.setSerializeType("jdk");
-        this.setCompressType("gzip");
-        this.setRegistryConfig(new RegistryConfig("zookeeper://127.0.0.1:2181"));
-        this.setIdGenerator(new IdGenerator(0, 0));
-        this.setLoadBalancer(new RoundRobinLoadBalancer());
-        this.setRegistry(this.registryConfig.getRegistry());
-    }
+public class XmlLoader {
 
     /**
      * 读取配置文件
      * dom4j框架适合 但此处不用
      * 此处用的是DocumentBuilderFactory结合Xpath
      */
-    private void loadFromXml() {
-
+    public static void loadFromXml(XrpcBootstrapConfiguration configuration){
         try {
             //1.创建一个document
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -120,48 +50,47 @@ public class XrpcBootstrapConfiguration {
             //解析端口
             int port = portParser(document, xPath);
             if (port != -1) {
-                this.setPort(port);
+                configuration.setPort(port);
             }
             //解析应用名称
             String applicationName = applicationNameParser(document, xPath);
             if (applicationName != null) {
-                this.setApplicationName(applicationName);
+                configuration.setApplicationName(applicationName);
             }
             RegistryConfig registryConfig = registryConfigParser(document, xPath);
             //解析注册中心配置
             if (registryConfig != null) {
-                this.setRegistryConfig(registryConfig);
+                configuration.setRegistryConfig(registryConfig);
             }
             //解析序列化类型
             String serializeType = serializeTypeParser(document, xPath);
             if (serializeType != null) {
-                this.setSerializeType(serializeType);
+                configuration.setSerializeType(serializeType);
             }
             //解析压缩类型
             String compressType = compressTypeParser(document, xPath);
             if (compressType != null) {
-                this.setCompressType(compressType);
+                configuration.setCompressType(compressType);
             }
             //解析负载均衡器
             LoadBalancer loadBalancer = loadBalancerParser(document, xPath);
             if (loadBalancer != null) {
-                this.setLoadBalancer(loadBalancer);
+                configuration.setLoadBalancer(loadBalancer);
             }
             //解析id生成器
             IdGenerator generator = idGeneratorParser(document, xPath);
             if (generator != null) {
-                this.setIdGenerator(generator);
+                configuration.setIdGenerator(generator);
             }
             //配置注册中心
-            this.setRegistry(this.registryConfig.getRegistry());
+            configuration.setRegistry(configuration.getRegistryConfig().getRegistry());
 
 
         } catch (ParserConfigurationException | IOException | SAXException e) {
             log.error("解析xml配置发生异常，采用默认配置", e);
         }
-
-
     }
+
 
     /**
      * 解析负载均衡器
@@ -170,10 +99,30 @@ public class XrpcBootstrapConfiguration {
      * @param xPath    解析器
      * @return 负载均衡器
      */
-    private LoadBalancer loadBalancerParser(Document document, XPath xPath) {
-        //todo string形式的配置 类似于序列化器的读取形式 需要负载均衡工厂
-        String expression = "/configuration/loadBalancer[@class]";
-        return parseObject(document, xPath, expression, null);
+    private static LoadBalancer loadBalancerParser(Document document, XPath xPath) {
+        String expression1 = "/configuration/loadBalanceType[@type]";
+        String expression2 = "/configuration/loadBalanceType[not(@type)]";
+        String expression3 = "/configuration/loadBalancer[@class]";
+        String expression4 = "/configuration/loadBalancer[@name]";
+        String expression5 = "/configuration/loadBalancer[@num]";
+        String loadBalanceType = null;
+        LoadBalancer loadBalancer = parseObject(document, xPath, expression3, null);
+        String loadBalancerName = parseString(document, xPath, expression4, "name");
+        String loadBalancerNum = parseString(document,xPath,expression5,"num");
+        //更新简单工厂的缓存
+        loadBalancer = LoadBalancerFactory.updateLoadBalancerFactory(loadBalancer,loadBalancerName,loadBalancerNum);
+        if (loadBalancer != null){
+            return loadBalancer;
+        }
+        loadBalanceType = parseString(document, xPath, expression1, "type");
+        if (loadBalanceType != null) {
+            return LoadBalancerFactory.getLoadBalancer(loadBalanceType);
+        }
+        loadBalanceType = parseString(document, xPath, expression2);
+        if (loadBalanceType != null){
+            return LoadBalancerFactory.getLoadBalancer(loadBalanceType);
+        }
+        return null;
     }
 
     /**
@@ -183,7 +132,7 @@ public class XrpcBootstrapConfiguration {
      * @param xPath    解析器
      * @return 注册中心连接配置
      */
-    private RegistryConfig registryConfigParser(Document document, XPath xPath) {
+    private static RegistryConfig registryConfigParser(Document document, XPath xPath) {
         String expression = "/configuration/registryConfig[@connect]";
         String connect = parseString(document, xPath, expression, "connect");
         if (connect == null) {
@@ -202,7 +151,7 @@ public class XrpcBootstrapConfiguration {
      * @param xPath    解析器
      * @return 压缩类型
      */
-    private String compressTypeParser(Document document, XPath xPath) {
+    private static String compressTypeParser(Document document, XPath xPath) {
         String expression1 = "/configuration/compressType[@type]";
         String expression2 = "/configuration/compressType[not(@type)]";
         String expression3 = "/configuration/compressor[@class]";
@@ -213,7 +162,7 @@ public class XrpcBootstrapConfiguration {
         String compressorName = parseString(document, xPath, expression4, "name");
         String compressorNum = parseString(document,xPath,expression5,"num");
         //更新简单工厂的缓存
-        compressType = updateCompressorFactory(compressor,compressorName,compressorNum);
+        compressType = CompressorFactory.updateCompressorFactory(compressor,compressorName,compressorNum);
         if (compressType != null){
             return compressType;
         }
@@ -225,28 +174,7 @@ public class XrpcBootstrapConfiguration {
         return compressType;
     }
 
-    /**
-     * 配置自定义压缩类 更新压缩类工厂缓存
-     * @param compressor 压缩类实例
-     * @param compressorName 压缩类名称
-     * @param compressorNum 压缩类号码
-     * @return 压缩类名称
-     */
-    private String updateCompressorFactory(Compressor compressor, String compressorName, String compressorNum) {
-        if (compressor == null || compressorName == null || compressorNum == null){
-            return null;
-        }
-        if (!CompressorFactory.COMPRESSOR_CACHE_TYPE.containsKey(compressorName)
-            && !CompressorFactory.COMPRESSOR_CACHE_CODE.containsKey(Byte.parseByte(compressorNum))) {
-            CompressorWrapper compressorWrapper = new CompressorWrapper(Byte.parseByte(compressorNum), compressorName, compressor);
-            CompressorFactory.COMPRESSOR_CACHE_TYPE.put(compressorName,compressorWrapper);
-            CompressorFactory.COMPRESSOR_CACHE_CODE.put(Byte.parseByte(compressorNum),compressorWrapper);
-            return compressorName;
-        }else {
-            log.error("xml配置的压缩类指定的名称或号码重复！");
-            return null;
-        }
-    }
+
 
 
     /**
@@ -259,7 +187,7 @@ public class XrpcBootstrapConfiguration {
      * @param xPath    解析器
      * @return 序列化方式
      */
-    private String serializeTypeParser(Document document, XPath xPath) {
+    private static String serializeTypeParser(Document document, XPath xPath) {
         String expression1 = "/configuration/serializeType[@type]";
         String expression2 = "/configuration/serializeType[not(@type)]";
         String expression3 = "/configuration/serializer[@class]";
@@ -270,7 +198,7 @@ public class XrpcBootstrapConfiguration {
         String serializerName = parseString(document, xPath, expression4, "name");
         String serializerNum = parseString(document,xPath,expression5,"num");
         //更新简单工厂的缓存
-        serializeType = updateSerializerFactory(serializer,serializerName,serializerNum);
+        serializeType = SerializerFactory.updateSerializerFactory(serializer,serializerName,serializerNum);
         if (serializeType != null){
             return serializeType;
         }
@@ -282,28 +210,7 @@ public class XrpcBootstrapConfiguration {
         return serializeType;
     }
 
-    /**
-     * 配置自定义序列化类 更新序列化类工厂缓存
-     * @param serializer 序列化类实例
-     * @param serializerName 序列化类名称
-     * @param serializerNum 序列化类编号
-     * @return 序列化类名称
-     */
-    private String updateSerializerFactory(Serializer serializer, String serializerName, String serializerNum) {
-        if (serializer == null || serializerName == null || serializerNum == null){
-            return null;
-        }
-        if (!SerializerFactory.SERIALIZER_CACHE_TYPE.containsKey(serializerName)
-        && !SerializerFactory.SERIALIZER_CACHE_CODE.containsKey(Byte.parseByte(serializerNum))){
-            SerializerWrapper serializerWrapper = new SerializerWrapper(Byte.parseByte(serializerNum), serializerName, serializer);
-            SerializerFactory.SERIALIZER_CACHE_TYPE.put(serializerName,serializerWrapper);
-            SerializerFactory.SERIALIZER_CACHE_CODE.put(Byte.parseByte(serializerNum),serializerWrapper);
-            return serializerName;
-        }else {
-            log.error("xml配置的序列化类指定的名称或号码重复！");
-            return null;
-        }
-    }
+
 
 
     /**
@@ -314,14 +221,14 @@ public class XrpcBootstrapConfiguration {
      * @param xPath    解析器
      * @return id生成器
      */
-    private IdGenerator idGeneratorParser(Document document, XPath xPath) {
+    private static IdGenerator idGeneratorParser(Document document, XPath xPath) {
         String expression1 = "/configuration/idGenerator[@dataCenterId]";
         String expression2 = "/configuration/idGenerator[@machineId]";
         String expression3 = "/configuration/idGenerator[@class]";
         String dataCenterIdStr = parseString(document, xPath, expression1, "dataCenterId");
         String machineIdStr = parseString(document, xPath, expression2, "machineId");
         if (dataCenterIdStr == null || machineIdStr == null || dataCenterIdStr.isEmpty() || machineIdStr.isEmpty()) {
-            log.info("您在xml中未配置机房号和机器号,若您为服务调用方,建议进行配置,否则在分布式下会有id冲突风险！" +
+            log.error("您在xml中未配置机房号和机器号,若您为服务调用方,建议进行配置,否则在分布式下会有id冲突风险！" +
                     "若您已经在其他配置方式中指定了,请无视本条信息");
             dataCenterIdStr = "0";
             machineIdStr = "0";
@@ -339,7 +246,7 @@ public class XrpcBootstrapConfiguration {
      * @param xPath    解析器
      * @return 应用名称
      */
-    private String applicationNameParser(Document document, XPath xPath) {
+    private static String applicationNameParser(Document document, XPath xPath) {
         String expression = "/configuration/applicationName";
         return parseString(document, xPath, expression);
     }
@@ -351,7 +258,7 @@ public class XrpcBootstrapConfiguration {
      * @param xPath    解析器
      * @return 端口号
      */
-    private int portParser(Document document, XPath xPath) {
+    private static int portParser(Document document, XPath xPath) {
         String expression = "/configuration/port";
         String port = parseString(document, xPath, expression);
         if (port == null) {
@@ -370,7 +277,7 @@ public class XrpcBootstrapConfiguration {
      * @param attributeName 指定参数
      * @return 字符串值
      */
-    private String parseString(Document document, XPath xPath, String expression, String attributeName) {
+    private static String parseString(Document document, XPath xPath, String expression, String attributeName) {
         try {
             XPathExpression xPathExpression = xPath.compile(expression);
             Node targetNode = (Node) xPathExpression.evaluate(document, XPathConstants.NODE);
@@ -396,7 +303,7 @@ public class XrpcBootstrapConfiguration {
      * @param expression xml标签表达式
      * @return 字符串值
      */
-    private String parseString(Document document, XPath xPath, String expression) {
+    private static String parseString(Document document, XPath xPath, String expression) {
         try {
             XPathExpression xPathExpression = xPath.compile(expression);
             Node targetNode = (Node) xPathExpression.evaluate(document, XPathConstants.NODE);
@@ -423,7 +330,7 @@ public class XrpcBootstrapConfiguration {
      * @param param      可变参数列表
      * @return 实例对象
      */
-    private <T> T parseObject(Document document, XPath xPath, String expression, Class<?>[] paramType, Object... param) {
+    private static <T> T parseObject(Document document, XPath xPath, String expression, Class<?>[] paramType, Object... param) {
         try {
             XPathExpression xPathExpression = xPath.compile(expression);
             Node targetNode = (Node) xPathExpression.evaluate(document, XPathConstants.NODE);
@@ -447,13 +354,14 @@ public class XrpcBootstrapConfiguration {
             }
             return (T) instance;
         } catch (XPathExpressionException | ClassNotFoundException
-                 | InvocationTargetException | InstantiationException
-                 | IllegalAccessException | NoSuchMethodException e) {
+                | InvocationTargetException | InstantiationException
+                | IllegalAccessException | NoSuchMethodException e) {
             log.error("解析xml配置发生异常，采用默认配置", e);
         }
         return null;
 
     }
+
 
     public static void main(String[] args) {
         //执行前注意注释掉注册中心的配置

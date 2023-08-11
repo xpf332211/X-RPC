@@ -1,4 +1,4 @@
-package com.meiya;
+package com.meiya.config;
 
 import com.meiya.constant.ZookeeperConstant;
 import com.meiya.exceptions.RegistryException;

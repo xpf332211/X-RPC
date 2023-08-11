@@ -1,6 +1,6 @@
 package com.meiya.registry;
 
-import com.meiya.ServiceConfig;
+import com.meiya.config.ServiceConfig;
 
 import java.net.InetSocketAddress;
 import java.util.List;

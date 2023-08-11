@@ -1,4 +1,4 @@
-package com.meiya;
+package com.meiya.bootstrap;
 
 import com.meiya.channelhandler.ConsumerChannelInitializer;
 import io.netty.bootstrap.Bootstrap;

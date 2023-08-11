@@ -52,7 +52,9 @@
 
         <!ELEMENT loadBalancer ANY>
         <!ATTLIST loadBalancer
-                class CDATA #REQUIRED>
+                class CDATA #REQUIRED
+                name CDATA #REQUIRED
+                num CDATA #REQUIRED>
 
         <!ELEMENT idGenerator ANY>
         <!ATTLIST idGenerator

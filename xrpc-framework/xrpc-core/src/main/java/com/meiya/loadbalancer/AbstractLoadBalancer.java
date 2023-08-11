@@ -1,8 +1,6 @@
 package com.meiya.loadbalancer;
 
-import com.meiya.XrpcBootstrap;
-import com.meiya.loadbalancer.impl.RoundRobinLoadBalancer;
-import com.meiya.registry.Registry;
+import com.meiya.bootstrap.XrpcBootstrap;
 
 import java.net.InetSocketAddress;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.meiya;
+package com.meiya.config;
 
 /**
  * @author xiaopf

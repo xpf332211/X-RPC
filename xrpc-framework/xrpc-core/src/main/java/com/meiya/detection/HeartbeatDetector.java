@@ -1,15 +1,12 @@
 package com.meiya.detection;
 
-import com.meiya.NettyBootstrap;
-import com.meiya.XrpcBootstrap;
+import com.meiya.bootstrap.NettyBootstrap;
+import com.meiya.bootstrap.XrpcBootstrap;
 import com.meiya.compress.CompressorFactory;
 import com.meiya.enumeration.RequestType;
 import com.meiya.exceptions.DiscoveryException;
-import com.meiya.exceptions.NettyException;
-import com.meiya.registry.Registry;
 import com.meiya.serialize.SerializerFactory;
 import com.meiya.transport.message.XrpcRequest;
-import com.meiya.utils.print.Out;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;

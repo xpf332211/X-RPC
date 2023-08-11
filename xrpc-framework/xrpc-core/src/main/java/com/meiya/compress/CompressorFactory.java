@@ -1,6 +1,7 @@
 package com.meiya.compress;
 
 import com.meiya.compress.impl.GzipCompressor;
+import com.meiya.config.wrapper.ObjectWrapper;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -11,12 +12,36 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 public class CompressorFactory {
-    public static final Map<String,CompressorWrapper> COMPRESSOR_CACHE_TYPE = new ConcurrentHashMap<>(4);
-    public static final Map<Byte,CompressorWrapper> COMPRESSOR_CACHE_CODE = new ConcurrentHashMap<>(4);
+    public static final Map<String, ObjectWrapper<?>> COMPRESSOR_CACHE_TYPE = new ConcurrentHashMap<>(4);
+    public static final Map<Byte,ObjectWrapper<?>> COMPRESSOR_CACHE_CODE = new ConcurrentHashMap<>(4);
     static {
-        CompressorWrapper gzip = new CompressorWrapper((byte) 1, "gzip", new GzipCompressor());
+        ObjectWrapper<Compressor> gzip = new ObjectWrapper<>((byte) 1, "gzip", new GzipCompressor());
         COMPRESSOR_CACHE_TYPE.put("gzip",gzip);
         COMPRESSOR_CACHE_CODE.put((byte)1,gzip);
+    }
+
+
+    /**
+     * 配置自定义压缩类 更新压缩类工厂缓存
+     * @param compressor 压缩类实例
+     * @param compressorName 压缩类名称
+     * @param compressorNum 压缩类号码
+     * @return 压缩类名称
+     */
+    public static String updateCompressorFactory(Compressor compressor, String compressorName, String compressorNum) {
+        if (compressor == null || compressorName == null || compressorNum == null){
+            return null;
+        }
+        if (!CompressorFactory.COMPRESSOR_CACHE_TYPE.containsKey(compressorName)
+                && !CompressorFactory.COMPRESSOR_CACHE_CODE.containsKey(Byte.parseByte(compressorNum))) {
+            ObjectWrapper<Compressor> compressorWrapper = new ObjectWrapper<>(Byte.parseByte(compressorNum), compressorName, compressor);
+            CompressorFactory.COMPRESSOR_CACHE_TYPE.put(compressorName,compressorWrapper);
+            CompressorFactory.COMPRESSOR_CACHE_CODE.put(Byte.parseByte(compressorNum),compressorWrapper);
+            return compressorName;
+        }else {
+            log.warn("配置的压缩类指定的名称或号码重复！");
+            return null;
+        }
     }
 
     /**
@@ -25,9 +50,9 @@ public class CompressorFactory {
      * @return 压缩器实例
      */
     public static Compressor getCompressor(String compressorType){
-        CompressorWrapper wrapper = COMPRESSOR_CACHE_TYPE.get(compressorType);
+        ObjectWrapper<?> wrapper = COMPRESSOR_CACHE_TYPE.get(compressorType);
         wrapper = validateWrapperNotNull(wrapper);
-        return wrapper.getCompressor();
+        return (Compressor) wrapper.getImpl();
     }
 
     /**
@@ -36,9 +61,9 @@ public class CompressorFactory {
      * @return 压缩器实例
      */
     public static Compressor getCompressor(byte compressorCode){
-        CompressorWrapper wrapper = COMPRESSOR_CACHE_CODE.get(compressorCode);
+        ObjectWrapper<?> wrapper = COMPRESSOR_CACHE_CODE.get(compressorCode);
         wrapper = validateWrapperNotNull(wrapper);
-        return wrapper.getCompressor();
+        return (Compressor) wrapper.getImpl();
     }
 
     /**
@@ -47,7 +72,7 @@ public class CompressorFactory {
      * @return 字节数字code
      */
     public static byte getCompressorCode(String compressorType){
-        CompressorWrapper wrapper = COMPRESSOR_CACHE_TYPE.get(compressorType);
+        ObjectWrapper<?> wrapper = COMPRESSOR_CACHE_TYPE.get(compressorType);
         wrapper = validateWrapperNotNull(wrapper);
         return wrapper.getCode();
     }
@@ -58,7 +83,7 @@ public class CompressorFactory {
      * @return 字符串type
      */
     public static String getCompressorType(byte compressorCode){
-        CompressorWrapper wrapper = COMPRESSOR_CACHE_CODE.get(compressorCode);
+        ObjectWrapper<?> wrapper = COMPRESSOR_CACHE_CODE.get(compressorCode);
         wrapper = validateWrapperNotNull(wrapper);
         return wrapper.getType();
     }
@@ -68,7 +93,7 @@ public class CompressorFactory {
      * @param wrapper 需要判断的wrapper
      * @return wrapper
      */
-    private static CompressorWrapper validateWrapperNotNull(CompressorWrapper wrapper){
+    private static ObjectWrapper<?> validateWrapperNotNull(ObjectWrapper<?> wrapper){
         if (wrapper == null){
             log.info("未匹配到指定的压缩类型,默认采用gzip压缩");
             wrapper = COMPRESSOR_CACHE_TYPE.get("gzip");

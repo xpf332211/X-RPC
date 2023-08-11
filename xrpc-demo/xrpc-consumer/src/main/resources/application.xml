@@ -9,13 +9,10 @@
     <registryConfig connect="zookeeper://127.0.0.1:2181"/>
 
     <!--    三选一  优先级:自定义class > 带参数 > 文本 -->
-    <serializeType type="hessian"/>
-    <serializeType>json</serializeType>
-    <serializer class="com.meiya.serializer.impl.HessianSerializer2" name="hessian2" num="4"/>
 
     <compressType>gzip</compressType>
 
-    <loadBalancer class="com.meiya.loadbalancer.impl.ShortestResponseTimeLoadBalancer"/>
+    <loadBalanceType>consistentHash</loadBalanceType>
 
 
     <idGenerator class="com.meiya.utils.IdGenerator" dataCenterId="3" machineId="4"/>

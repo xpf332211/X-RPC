@@ -1,0 +1,3 @@
+3-shortestResponseTime-com.meiya.loadbalancer.impl.ShortestResponseTimeLoadBalancer
+1-roundRobin-com.meiya.loadbalancer.impl.RoundRobinLoadBalancer
+2-consistentHash-com.meiya.loadbalancer.impl.ConsistentHashLoadBalancer
