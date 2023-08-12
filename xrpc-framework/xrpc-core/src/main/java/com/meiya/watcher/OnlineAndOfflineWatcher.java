@@ -2,6 +2,7 @@ package com.meiya.watcher;
 
 import com.meiya.bootstrap.NettyBootstrap;
 import com.meiya.bootstrap.XrpcBootstrap;
+import com.meiya.exceptions.DiscoveryException;
 import com.meiya.registry.Registry;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -11,6 +12,7 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +31,17 @@ public class OnlineAndOfflineWatcher implements Watcher {
             String serviceName = getServiceName(event.getPath());
             Registry registry = XrpcBootstrap.getInstance().getConfiguration().getRegistry();
             //获取感知服务下的所有子节点的地址
-            List<InetSocketAddress> addressList = registry.seekServiceList(serviceName);
+            List<InetSocketAddress> addressList = new ArrayList<>();
+            try {
+                 addressList = registry.seekServiceList(serviceName);
+            }catch (DiscoveryException e){
+                //服务的所有主机均下线 清空缓存
+                log.error("感知到服务下已经没有可用主机了");
+                XrpcBootstrap.ALL_SERVICE_ADDRESS_LIST.clear();
+                XrpcBootstrap.CHANNEL_CACHE.clear();
+            }
+
+
             //可能增加了节点 此时ALL_SERVICE_ADDRESS_LIST和CHANNEL_CACHE中都没有该节点
             for (InetSocketAddress address : addressList) {
                 if (!XrpcBootstrap.ALL_SERVICE_ADDRESS_LIST.contains(address)) {
@@ -44,13 +56,18 @@ public class OnlineAndOfflineWatcher implements Watcher {
             //可能下线了节点 此时ALL_SERVICE_ADDRESS_LIST和CHANNEL_CACHE可能还存在该节点 可能已经心跳检测剔除了
             //不过addressList中一定没有该节点
             //如果ALL_SERVICE_ADDRESS_LIST和CHANNEL_CACHE中有的节点 在addressList中没有 说明该节点应该被剔除
-            XrpcBootstrap.ALL_SERVICE_ADDRESS_LIST.removeIf(address -> !addressList.contains(address));
+            for (InetSocketAddress address : XrpcBootstrap.ALL_SERVICE_ADDRESS_LIST) {
+                if (!addressList.contains(address)){
+                    XrpcBootstrap.ALL_SERVICE_ADDRESS_LIST.remove(address);
+                }
+            }
             for (Map.Entry<InetSocketAddress,Channel> entry : XrpcBootstrap.CHANNEL_CACHE.entrySet()){
                 if (!addressList.contains(entry.getKey())){
                     XrpcBootstrap.CHANNEL_CACHE.remove(entry.getKey());
                 }
             }
             //负载均衡缓存的主机列表未更新 需要重新负载均衡根据拉取的最新的服务列表 构建新的selector并加入缓存
+            //若服务的主机均下线，则加入空的addressList
             XrpcBootstrap.getInstance().getConfiguration().getLoadBalancer().reLoadBalance(serviceName,addressList);
         }
     }

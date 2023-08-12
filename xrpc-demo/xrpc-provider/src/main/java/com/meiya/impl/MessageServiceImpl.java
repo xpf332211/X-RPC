@@ -1,6 +1,7 @@
 package com.meiya.impl;
 
 import com.meiya.MessageService;
+import com.meiya.annotation.Retry;
 import com.meiya.annotation.XrpcApi;
 
 /**

@@ -201,7 +201,7 @@ public class XrpcBootstrap {
     private void publish(ServiceConfig<?> serviceConfig) {
         //将服务注册到注册中心上
         configuration.getRegistry().register(serviceConfig);
-        //维护服务列表
+        //维护服务列表 一个接口只维护一个实现类的实例 这里不考虑一个接口有多个实现类
         SERVICE_MAP.put(serviceConfig.getInterface().getName(), serviceConfig);
     }
 

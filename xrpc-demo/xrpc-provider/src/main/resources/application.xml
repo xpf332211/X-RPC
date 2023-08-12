@@ -4,7 +4,7 @@
 <configuration>
 
 
-    <port>8090</port>
+    <port>8089</port>
     <applicationName>app-provider-name</applicationName>
 
 

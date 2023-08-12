@@ -94,11 +94,11 @@ public class HeartbeatDetector {
                     channel.writeAndFlush(request);
                     log.info("服务调用方,向【{}】主机发送了id为【{}】的心跳请求", entry.getKey(), request.getRequestId());
                     try {
-                        completableFuture.get(1, TimeUnit.SECONDS);
+                        completableFuture.get(2, TimeUnit.SECONDS);
                         success = true;
                     } catch (InterruptedException | ExecutionException | TimeoutException e) {
                         retryCount++;
-                        log.error("心跳检测时，获取和【{}】的主机连接异常,正在进行第【{}】次重试", address, retryCount);
+                        log.warn("心跳检测时，获取和【{}】的主机连接异常,正在进行第【{}】次重试", address, retryCount);
                         //睡眠随机数 防止重试风暴
                         Thread.sleep(10 + new Random().nextInt(20));
                     }
