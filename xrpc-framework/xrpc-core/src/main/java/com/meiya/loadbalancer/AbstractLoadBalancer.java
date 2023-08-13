@@ -29,7 +29,10 @@ public abstract class AbstractLoadBalancer implements LoadBalancer{
 
     @Override
     public void reLoadBalance(String serviceName,List<InetSocketAddress> addressList) {
-        SELECTOR_CACHE.put(serviceName,initSelector(addressList));
+        if (serviceName != null){
+            SELECTOR_CACHE.put(serviceName,initSelector(addressList));
+        }
+
     }
 
     /**

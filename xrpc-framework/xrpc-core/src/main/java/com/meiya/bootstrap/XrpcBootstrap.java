@@ -8,6 +8,7 @@ import com.meiya.config.ServiceConfig;
 import com.meiya.config.XrpcBootstrapConfiguration;
 import com.meiya.detection.HeartbeatDetector;
 import com.meiya.exceptions.NettyException;
+import com.meiya.hook.XrpcShutDownHook;
 import com.meiya.loadbalancer.LoadBalancer;
 import com.meiya.protection.CircuitBreaker;
 import com.meiya.protection.CurrentLimiter;
@@ -128,6 +129,9 @@ public class XrpcBootstrap {
      * 服务提供方完成配置 启动netty服务
      */
     public void start() {
+        //1.注册jvm关闭钩子函数
+        Runtime.getRuntime().addShutdownHook(new XrpcShutDownHook());
+        //2.启动netty
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         NioEventLoopGroup boss = new NioEventLoopGroup(2);
         NioEventLoopGroup worker = new NioEventLoopGroup(10);

@@ -5,6 +5,8 @@ import com.meiya.enumeration.ResponseCode;
 import com.meiya.exceptions.ResponseException;
 import com.meiya.protection.CircuitBreaker;
 import com.meiya.protection.impl.StateCircuitBreaker;
+import com.meiya.transport.message.RequestPayload;
+import com.meiya.transport.message.XrpcRequest;
 import com.meiya.transport.message.XrpcResponse;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -13,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -55,6 +58,20 @@ public class ResponseCompleteHandler extends SimpleChannelInboundHandler<XrpcRes
             log.warn("id为【{}】的请求远程调用的服务器内部错误",xrpcResponse.getRequestId());
             circuitBreaker.reportFailure();
             throw new ResponseException(ResponseCode.SERVER_ERROR.getDesc());
+        }else if (responseCode == ResponseCode.SERVER_CLOSING.getCode()){
+            log.warn("id为【{}】的请求远程调用的服务器正在关闭",xrpcResponse.getRequestId());
+            //修正服务列表
+            XrpcBootstrap.ALL_SERVICE_ADDRESS_LIST.remove(address);
+            XrpcBootstrap.CHANNEL_CACHE.remove(address);
+            //修正负载均衡器
+            XrpcRequest request = XrpcBootstrap.REQUEST_THREAD_LOCAL.get();
+            RequestPayload payload = request.getRequestPayload();
+            String serviceName = null;
+            if (payload != null){
+               serviceName = payload.getInterfaceName();
+            }
+            XrpcBootstrap.getInstance().getConfiguration().getLoadBalancer().reLoadBalance(serviceName,XrpcBootstrap.ALL_SERVICE_ADDRESS_LIST);
+            throw new ResponseException(ResponseCode.SERVER_CLOSING.getDesc());
         }
 
         future.complete(responseContext);

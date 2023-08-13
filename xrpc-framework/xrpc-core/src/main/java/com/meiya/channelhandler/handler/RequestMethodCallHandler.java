@@ -4,6 +4,7 @@ import com.meiya.config.ServiceConfig;
 import com.meiya.bootstrap.XrpcBootstrap;
 import com.meiya.enumeration.RequestType;
 import com.meiya.enumeration.ResponseCode;
+import com.meiya.hook.ShutDownHolder;
 import com.meiya.protection.CurrentLimiter;
 import com.meiya.protection.impl.TokenBucketCurrentLimiter;
 import com.meiya.transport.message.RequestPayload;
@@ -29,16 +30,7 @@ public class RequestMethodCallHandler extends SimpleChannelInboundHandler<XrpcRe
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, XrpcRequest xrpcRequest) throws Exception {
 
-        //1.获取ip限流器
-        Channel channel = channelHandlerContext.channel();
-        InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
-        CurrentLimiter currentLimiter = XrpcBootstrap.IP_CURRENT_LIMITER_CACHE.get(address);
-        if (currentLimiter == null){
-             currentLimiter = new TokenBucketCurrentLimiter(500, 500);
-            XrpcBootstrap.IP_CURRENT_LIMITER_CACHE.put(address,currentLimiter);
-        }
-
-        //2.封装部分响应
+        //1.封装部分响应
         long requestId = xrpcRequest.getRequestId();
         byte serializerCode = xrpcRequest.getSerializeType();
         byte compressCode = xrpcRequest.getCompressType();
@@ -50,17 +42,37 @@ public class RequestMethodCallHandler extends SimpleChannelInboundHandler<XrpcRe
                 .requestId(requestId)
                 .build();
 
-        //3.判断限流情况
+        //2.查看挡板是否打开 若打开则设置状态码 然后直接返回
+        if (ShutDownHolder.BAFFLE.get()){
+            xrpcResponse.setResponseCode(ResponseCode.SERVER_CLOSING.getCode());
+            channelHandlerContext.channel().writeAndFlush(xrpcResponse);
+            return;
+        }
+        //3.请求计数器 加一
+        ShutDownHolder.REQUEST_COUNTER.increment();
+
+        //4.获取ip限流器
+        Channel channel = channelHandlerContext.channel();
+        InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
+        CurrentLimiter currentLimiter = XrpcBootstrap.IP_CURRENT_LIMITER_CACHE.get(address);
+        if (currentLimiter == null){
+             currentLimiter = new TokenBucketCurrentLimiter(500, 500);
+            XrpcBootstrap.IP_CURRENT_LIMITER_CACHE.put(address,currentLimiter);
+        }
+
+
+
+        //5.判断限流情况
         boolean allowRequest = currentLimiter.allowRequestPass();
-        //3.1 被限流 无需调用方法 直接返回限流响应 注意心跳请求不应该被限流，也就不会被熔断了
+        //5.1 被限流 无需调用方法 直接返回限流响应 注意心跳请求不应该被限流，也就不会被熔断了
         if (!allowRequest && xrpcRequest.getRequestType() != RequestType.HEART_BEAT.getId()){
             responseCode = ResponseCode.CURRENT_LIMIT.getCode();
         }
-        //3.2 心跳请求
+        //5.2 心跳请求
         else if (xrpcRequest.getRequestType() == RequestType.HEART_BEAT.getId()){
             responseCode = ResponseCode.SUCCESS_HEART_BEAT.getCode();
         }
-        //3.3 普通请求
+        //5.3 普通请求
         else if (xrpcRequest.getRequestType() == RequestType.REQUEST.getId()){
             //获取请求体
             RequestPayload requestPayload = xrpcRequest.getRequestPayload();
@@ -80,17 +92,25 @@ public class RequestMethodCallHandler extends SimpleChannelInboundHandler<XrpcRe
             }
 
         }
-        //4 填充响应
+        //6.填充响应
         xrpcResponse.setResponseCode(responseCode);
         xrpcResponse.setResponseBody(responseBody);
 
 
 
 
-        //写出响应
+        //7.写出响应
         channel.writeAndFlush(xrpcResponse).addListener(future -> {
             log.info("服务提供方发送了id为【{}】的响应", requestId);
         });
+
+        //8.请求计数器 减一 并判断请求数是否为0了 若是则通知XrpcShutDownHook结束阻塞
+        ShutDownHolder.REQUEST_COUNTER.decrement();
+        if (ShutDownHolder.REQUEST_COUNTER.sum() == 0){
+            synchronized (this){
+                notifyAll();
+            }
+        }
     }
 
     /**
