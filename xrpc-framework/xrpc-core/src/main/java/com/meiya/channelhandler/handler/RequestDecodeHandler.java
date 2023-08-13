@@ -79,20 +79,20 @@ public class RequestDecodeHandler extends LengthFieldBasedFrameDecoder {
                 .requestType(requestType)
                 .requestId(requestId)
                 .build();
-        //判断是否为心跳检测请求 若是则不需要解析请求体
-        if (xrpcRequest.getRequestType() == RequestType.HEART_BEAT.getId()){
-            return xrpcRequest;
+        //判断是普通请求还是心跳请求 只有普通请求才需要处理请求体
+        if (xrpcRequest.getRequestType() == RequestType.REQUEST.getId()){
+            //解析请求体
+            int payloadLength = fullLength - headerLength;
+            byte[] payload = new byte[payloadLength];
+            byteBuf.readBytes(payload);
+            Compressor compressor = CompressorFactory.getCompressor(compressType);
+            payload = compressor.decompress(payload);
+            Serializer serializer = SerializerFactory.getSerializer(serializeType);
+            RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
+            xrpcRequest.setRequestPayload(requestPayload);
+            log.info("id为【{}】的请求经过了报文解析",requestId);
         }
-        //解析请求体
-        int payloadLength = fullLength - headerLength;
-        byte[] payload = new byte[payloadLength];
-        byteBuf.readBytes(payload);
-        Compressor compressor = CompressorFactory.getCompressor(compressType);
-        payload = compressor.decompress(payload);
-        Serializer serializer = SerializerFactory.getSerializer(serializeType);
-        RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
-        xrpcRequest.setRequestPayload(requestPayload);
-        log.info("id为【{}】的请求经过了报文解析",requestId);
+
         return xrpcRequest;
 
     }

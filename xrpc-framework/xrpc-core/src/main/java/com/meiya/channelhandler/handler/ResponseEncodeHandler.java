@@ -47,7 +47,7 @@ public class ResponseEncodeHandler extends MessageToByteEncoder<XrpcResponse> {
         //8个字节的请求id
         byteBuf.writeLong(xrpcResponse.getRequestId());
 
-        //判断是否为成功响应，是才需要处理响应体
+        //判断是否为普通请求的成功响应，是才需要处理响应体
         int bodyLength = 0;
         if (xrpcResponse.getResponseCode() == ResponseCode.SUCCESS.getCode()){
             Serializer serializer = SerializerFactory.getSerializer(xrpcResponse.getSerializeType());

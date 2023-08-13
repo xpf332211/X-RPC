@@ -7,6 +7,9 @@ import com.meiya.compress.CompressorFactory;
 import com.meiya.enumeration.RequestType;
 import com.meiya.exceptions.DiscoveryException;
 import com.meiya.exceptions.NettyException;
+import com.meiya.exceptions.ResponseException;
+import com.meiya.protection.CircuitBreaker;
+import com.meiya.protection.impl.StateCircuitBreaker;
 import com.meiya.registry.Registry;
 import com.meiya.serialize.SerializerFactory;
 import com.meiya.transport.message.RequestPayload;
@@ -19,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -103,9 +107,23 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
                 continue;
             }
             log.info("服务调用方,选取了服务【{}】的可用主机【{}】", interfaceRef.getName(), address);
-            //3.服务调用方启动netty 连接服务提供方 发送需要调用的服务的信息
+
+            //3.获取熔断器
+            Map<InetSocketAddress, CircuitBreaker> circuitBreakerCache = XrpcBootstrap.IP_CIRCUIT_BREAKER_CACHE;
+            CircuitBreaker circuitBreaker = circuitBreakerCache.get(address);
+            if (circuitBreaker == null){
+                circuitBreaker = new StateCircuitBreaker(5, 2000);
+                circuitBreakerCache.put(address,circuitBreaker);
+            }
+            //断路器开启
+            if (!circuitBreaker.allowRequestPass()){
+                log.error("【{}】主机熔断器开启,无法发送请求",address);
+                return null;
+            }
+
+            //4.服务调用方启动netty 连接服务提供方 发送需要调用的服务的信息
             Channel channel = getAvailableChannel(address);
-            //4.写出请求
+            //5.写出请求
             CompletableFuture<Object> completableFuture = new CompletableFuture<>();
             //对外暴露这个completableFuture
             XrpcBootstrap.PENDING_REQUEST.put(requestId, completableFuture);
@@ -115,15 +133,17 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
                     });
 
             XrpcBootstrap.REQUEST_THREAD_LOCAL.remove();
-            //5.获取响应的结果
+            //6.获取响应的结果
             //阻塞等待其他地方处理这个completableFuture
             try {
                 result = completableFuture.get(timeout, TimeUnit.SECONDS);
                 success = true;
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                //无需重试
                 if (notRetry){
                     break;
                 }
+                //重试
                 retryCount++;
                 log.warn("服务调用方获取和【{}】服务的【{}】的主机连接异常,正在进行第【{}】次重试", method.getName(),address, retryCount);
                 //睡眠随机数 防止重试风暴
@@ -131,7 +151,7 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
             }
         }
 
-        //处理调用日志
+        //7.处理调用日志
         handleLog(method, maxRetries, notRetry, retryCount, success, requestId, result,address);
         return result;
     }

@@ -20,10 +20,15 @@ public class ConsumerApplication {
                 .finish();
 
         //获取代理对象
-       while (true){
-           Thread.sleep(1 * 1000);
-           MessageService messageService = referenceConfig.get();
-           String message = messageService.getMessage("Jerry");
-       }
+
+        new Thread(() -> {
+            for (int i = 0;i < 300 ; i++){
+                MessageService messageService = referenceConfig.get();
+                String message = messageService.getMessage("Jerry");
+            }
+        }).start();
+
+
+
     }
 }

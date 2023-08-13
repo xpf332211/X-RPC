@@ -76,20 +76,20 @@ public class ResponseDecodeHandler extends LengthFieldBasedFrameDecoder {
                 .requestId(requestId)
                 .build();
 
-        //判断是否为检测响应 是的话则不需要解析响应体
-        if (xrpcResponse.getResponseCode() == ResponseCode.DETECT.getCode()){
-            return xrpcResponse;
+        //判断是否为普通请求的成功响应，只有普通请求的成功响应才需要解析响应体
+        if (xrpcResponse.getResponseCode() == ResponseCode.SUCCESS.getCode()){
+            //解析响应体
+            int bodyLength = fullLength - headerLength;
+            byte[] body = new byte[bodyLength];
+            byteBuf.readBytes(body);
+            Compressor compressor = CompressorFactory.getCompressor(compressType);
+            body = compressor.decompress(body);
+            Serializer serializer = SerializerFactory.getSerializer(serializeType);
+            ResponseBody responseBody = serializer.deserialize(body, ResponseBody.class);
+            xrpcResponse.setResponseBody(responseBody);
+            log.info("id为【{}】的响应经过了报文解析",xrpcResponse.getRequestId());
         }
-        //解析响应体
-        int bodyLength = fullLength - headerLength;
-        byte[] body = new byte[bodyLength];
-        byteBuf.readBytes(body);
-        Compressor compressor = CompressorFactory.getCompressor(compressType);
-        body = compressor.decompress(body);
-        Serializer serializer = SerializerFactory.getSerializer(serializeType);
-        ResponseBody responseBody = serializer.deserialize(body, ResponseBody.class);
-        xrpcResponse.setResponseBody(responseBody);
-        log.info("id为【{}】的响应经过了报文解析",xrpcResponse.getRequestId());
+
         return xrpcResponse;
     }
 }

@@ -228,7 +228,7 @@ public class XmlLoader {
         String dataCenterIdStr = parseString(document, xPath, expression1, "dataCenterId");
         String machineIdStr = parseString(document, xPath, expression2, "machineId");
         if (dataCenterIdStr == null || machineIdStr == null || dataCenterIdStr.isEmpty() || machineIdStr.isEmpty()) {
-            log.error("您在xml中未配置机房号和机器号,若您为服务调用方,建议进行配置,否则在分布式下会有id冲突风险！" +
+            log.warn("您在xml中未配置机房号和机器号,若您为服务调用方,建议进行配置,否则在分布式下会有id冲突风险！" +
                     "若您已经在其他配置方式中指定了,请无视本条信息");
             dataCenterIdStr = "0";
             machineIdStr = "0";

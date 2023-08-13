@@ -1,4 +1,5 @@
-package com.meiya.protection;
+package com.meiya.protection.impl;
+import com.meiya.protection.CurrentLimiter;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -7,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author xiaopf
  */
 @Slf4j
-public class TokenBucketCurrentLimiter {
+public class TokenBucketCurrentLimiter implements CurrentLimiter {
 
     /**
      * 令牌桶
@@ -40,6 +41,7 @@ public class TokenBucketCurrentLimiter {
      * 需要保证线程安全
      * @return true放行 反之
      */
+    @Override
     public synchronized boolean allowRequestPass(){
         //计算两次请求的时间间隔内 需要添加的令牌
         long currentTime = System.currentTimeMillis();

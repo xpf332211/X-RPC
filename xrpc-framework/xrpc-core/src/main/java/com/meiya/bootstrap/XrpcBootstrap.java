@@ -9,6 +9,8 @@ import com.meiya.config.XrpcBootstrapConfiguration;
 import com.meiya.detection.HeartbeatDetector;
 import com.meiya.exceptions.NettyException;
 import com.meiya.loadbalancer.LoadBalancer;
+import com.meiya.protection.CircuitBreaker;
+import com.meiya.protection.CurrentLimiter;
 import com.meiya.transport.message.XrpcRequest;
 import com.meiya.utils.FileUtils;
 import io.netty.bootstrap.ServerBootstrap;
@@ -39,7 +41,14 @@ public class XrpcBootstrap {
      */
     @Getter
     private final XrpcBootstrapConfiguration configuration;
-
+    /**
+     * ip级别的限流器缓存
+     */
+    public static final Map<InetSocketAddress, CurrentLimiter> IP_CURRENT_LIMITER_CACHE = new ConcurrentHashMap<>(16);
+    /**
+     * ip级别的熔断器缓存
+     */
+    public static final Map<InetSocketAddress, CircuitBreaker> IP_CIRCUIT_BREAKER_CACHE = new ConcurrentHashMap<>(16);
     /**
      * 记录所有需要发现的服务对应的主机
      * 去重后
