@@ -28,12 +28,14 @@ public class OnlineAndOfflineWatcher implements Watcher {
             if (log.isDebugEnabled()) {
                 log.debug("感知到服务【{}】下有节点上下线,将重新拉取服务", event.getPath());
             }
-            String serviceName = getServiceName(event.getPath());
+            String[] serviceNameAndGroup = getServiceName(event.getPath());
+            String serviceName = serviceNameAndGroup[0];
+            String group = serviceNameAndGroup[1];
             Registry registry = XrpcBootstrap.getInstance().getConfiguration().getRegistry();
             //获取感知服务下的所有子节点的地址
             List<InetSocketAddress> addressList = new ArrayList<>();
             try {
-                 addressList = registry.seekServiceList(serviceName);
+                 addressList = registry.seekServiceList(serviceName,group);
             }catch (DiscoveryException e){
                 //服务的所有主机均下线 清空缓存
                 log.error("感知到服务下已经没有可用主机了");
@@ -72,8 +74,8 @@ public class OnlineAndOfflineWatcher implements Watcher {
         }
     }
 
-    private String getServiceName(String path) {
+    private String[] getServiceName(String path) {
         String[] split = path.split("/");
-        return split[split.length - 1];
+        return new String[]{split[split.length - 2],split[split.length - 1]};
     }
 }

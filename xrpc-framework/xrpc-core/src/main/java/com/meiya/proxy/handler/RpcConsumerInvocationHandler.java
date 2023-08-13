@@ -44,10 +44,12 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
 
     private final Registry registry;
     private final Class<?> interfaceRef;
+    private String group;
 
-    public RpcConsumerInvocationHandler(Registry registry, Class<?> interfaceRef) {
+    public RpcConsumerInvocationHandler(Registry registry, Class<?> interfaceRef,String group) {
         this.registry = registry;
         this.interfaceRef = interfaceRef;
+        this.group = group;
     }
 
     @Override
@@ -94,7 +96,7 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
         InetSocketAddress address = null;
         while ((notRetry || (retryCount < maxRetries)) && !success) {
             XrpcBootstrap.REQUEST_THREAD_LOCAL.set(xrpcRequest);
-            address = XrpcBootstrap.getInstance().getConfiguration().getLoadBalancer().getServiceAddress(interfaceRef.getName());
+            address = XrpcBootstrap.getInstance().getConfiguration().getLoadBalancer().getServiceAddress(interfaceRef.getName(),group);
             //服务的可用主机全部下线了
             if (address == null){
                 if (notRetry){

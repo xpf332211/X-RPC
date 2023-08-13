@@ -20,7 +20,7 @@ public class NacosRegistry extends AbstractRegistry {
     }
 
     @Override
-    public List<InetSocketAddress> seekServiceList(String serviceName) {
+    public List<InetSocketAddress> seekServiceList(String serviceName,String group) {
         return null;
     }
 

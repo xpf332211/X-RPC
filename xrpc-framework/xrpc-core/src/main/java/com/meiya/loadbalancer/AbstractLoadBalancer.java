@@ -16,11 +16,11 @@ public abstract class AbstractLoadBalancer implements LoadBalancer{
      */
     private static final Map<String,Selector> SELECTOR_CACHE = new ConcurrentHashMap<>(8);
     @Override
-    public InetSocketAddress getServiceAddress(String serviceName) {
+    public InetSocketAddress getServiceAddress(String serviceName,String group) {
         //从缓存中获取服务对应的选择器
         Selector selector = SELECTOR_CACHE.get(serviceName);
         if (selector == null){
-            List<InetSocketAddress> serviceList = XrpcBootstrap.getInstance().getConfiguration().getRegistry().seekServiceList(serviceName);
+            List<InetSocketAddress> serviceList = XrpcBootstrap.getInstance().getConfiguration().getRegistry().seekServiceList(serviceName,group);
             selector = initSelector(serviceList);
             SELECTOR_CACHE.put(serviceName,selector);
         }

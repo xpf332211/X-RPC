@@ -11,8 +11,10 @@ public class ConsumerApplication {
         //获取一个reference 把配置项封装
         ReferenceConfig<MessageService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(MessageService.class);
+        referenceConfig.setGroup("default");
         ReferenceConfig<ProductService> referenceConfig1 = new ReferenceConfig<>();
         referenceConfig1.setInterface(ProductService.class);
+        referenceConfig1.setGroup("primary");
 
         XrpcBootstrap.getInstance()
                 .reference(referenceConfig)

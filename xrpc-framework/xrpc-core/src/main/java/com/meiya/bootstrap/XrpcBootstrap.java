@@ -187,11 +187,16 @@ public class XrpcBootstrap {
                      NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
+
+            //获取实现类对应的分组
+            XrpcApi annotation = clazz.getAnnotation(XrpcApi.class);
+            String group = annotation.group();
             //封装serviceConfig对象 发布
             for (Class<?> anInterface : interfaces) {
                 ServiceConfig<?> serviceConfig = new ServiceConfig<>();
                 serviceConfig.setInterface(anInterface);
                 serviceConfig.setRef(instance);
+                serviceConfig.setGroup(group);
                 //发布服务
                 this.publish(serviceConfig);
                 if (log.isDebugEnabled()) {
@@ -236,6 +241,7 @@ public class XrpcBootstrap {
      * @return 当前实例
      */
     public XrpcBootstrap reference(ReferenceConfig<?> referenceConfig) {
+
         REFERENCE_CONFIG_LIST.add(referenceConfig);
         referenceConfig.setRegistry(configuration.getRegistry());
         return this;
@@ -278,8 +284,7 @@ public class XrpcBootstrap {
         List<InetSocketAddress> addressList = new ArrayList<>();
         for (ReferenceConfig<?> referenceConfig : REFERENCE_CONFIG_LIST) {
             String serviceName = referenceConfig.getInterface().getName();
-            System.out.println(configuration.getRegistry());
-            List<InetSocketAddress> addresses = configuration.getRegistry().seekServiceList(serviceName);
+            List<InetSocketAddress> addresses = configuration.getRegistry().seekServiceList(serviceName,referenceConfig.getGroup());
             addressList.addAll(addresses);
         }
         //主机 去重

@@ -32,7 +32,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
 
 
     @Override
-    public void register(ServiceConfig serviceConfig) {
+    public void register(ServiceConfig<?> serviceConfig) {
         if (serviceConfig.getInterface() == null){
             throw new NullPointerException("请配置需要发布的服务接口");
         }
@@ -46,9 +46,15 @@ public class ZookeeperRegistry extends AbstractRegistry {
             ZookeeperNode zookeeperNode = new ZookeeperNode(providersPath,null);
             ZookeeperUtils.createNode(zooKeeper,zookeeperNode,null);
         }
+        //创建服务根节点下的分组
+        String groupPath = providersPath + "/" + serviceConfig.getGroup();
+        if (!ZookeeperUtils.exists(zooKeeper,groupPath,null)){
+            ZookeeperNode zookeeperNode = new ZookeeperNode(groupPath,null);
+            ZookeeperUtils.createNode(zooKeeper,zookeeperNode,null);
+        }
         //创建服务对应的子节点 为临时节点 名称为ip:port
         //服务提供方的端口先直接定义好 还需要一个获取ip的方法
-        String childServiceName = providersPath + '/' + NetUtils.getIp() + ':' + XrpcBootstrap.getInstance().getConfiguration().getPort();
+        String childServiceName = groupPath + '/' + NetUtils.getIp() + ':' + XrpcBootstrap.getInstance().getConfiguration().getPort();
         if (!ZookeeperUtils.exists(zooKeeper,childServiceName,null)){
             ZookeeperNode zookeeperNode = new ZookeeperNode(childServiceName,null);
             ZookeeperUtils.createNode(zooKeeper,zookeeperNode,null,null, CreateMode.EPHEMERAL);
@@ -56,8 +62,8 @@ public class ZookeeperRegistry extends AbstractRegistry {
     }
 
     @Override
-    public List<InetSocketAddress> seekServiceList(String serviceName) {
-        String servicePath = ZookeeperConstant.BATH_PROVIDERS_PATH + '/' + serviceName;
+    public List<InetSocketAddress> seekServiceList(String serviceName,String group) {
+        String servicePath = ZookeeperConstant.BATH_PROVIDERS_PATH + '/' + serviceName + '/' + group;
         //获取子节点
         List<String> childrenService = ZookeeperUtils.getChildren(zooKeeper,servicePath,new OnlineAndOfflineWatcher());
         List<InetSocketAddress> inetSocketAddressList = childrenService.stream().map(host -> {

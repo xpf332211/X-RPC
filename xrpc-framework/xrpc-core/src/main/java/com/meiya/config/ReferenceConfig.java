@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class ReferenceConfig<T> {
     private Class<T> interfaceRef;
     private Registry registry;
-
+    private String group;
 
     public Class<T> getInterface() {
         return interfaceRef;
@@ -45,6 +45,14 @@ public class ReferenceConfig<T> {
         this.registry = registry;
     }
 
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
     /**
      * 代理设计模式 生成一个api接口的代理对象
      *
@@ -53,7 +61,7 @@ public class ReferenceConfig<T> {
     public T get() {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         Class<?>[] classes = new Class[]{interfaceRef};
-        InvocationHandler invocationHandler = new RpcConsumerInvocationHandler(registry,interfaceRef);
+        InvocationHandler invocationHandler = new RpcConsumerInvocationHandler(registry,interfaceRef,group);
         //使用动态代理 生成代理对象
         Object proxy = Proxy.newProxyInstance(classLoader, classes, invocationHandler);
         return (T) proxy;

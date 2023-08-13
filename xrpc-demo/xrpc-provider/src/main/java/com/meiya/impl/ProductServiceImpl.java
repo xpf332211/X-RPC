@@ -6,7 +6,7 @@ import com.meiya.annotation.XrpcApi;
 /**
  * @author xiaopf
  */
-@XrpcApi
+@XrpcApi(group = "primary2")
 public class ProductServiceImpl implements ProductService {
     @Override
     public String getProduct() {
