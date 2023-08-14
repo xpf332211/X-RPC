@@ -6,7 +6,7 @@ import com.meiya.annotation.XrpcApi;
 /**
  * @author xiaopf
  */
-@XrpcApi(group = "default2")
+@XrpcApi
 public class MessageServiceImpl implements MessageService {
     @Override
     public String getMessage(String name) {

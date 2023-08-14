@@ -3,6 +3,7 @@ package com.meiya.config;
 import com.meiya.config.loader.DefaultLoader;
 import com.meiya.config.loader.SpiLoader;
 import com.meiya.config.loader.XmlLoader;
+import com.meiya.config.loader.YmlLoader;
 import com.meiya.loadbalancer.LoadBalancer;
 import com.meiya.registry.Registry;
 import com.meiya.utils.IdGenerator;
@@ -63,5 +64,7 @@ public class XrpcBootstrapConfiguration {
         SpiLoader.loadFromSpi(this);
         //加载xml配置
         XmlLoader.loadFromXml(this);
+        //加载yml配置
+        YmlLoader.loadFromYml(this);
     }
 }

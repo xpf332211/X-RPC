@@ -4,7 +4,7 @@
 <configuration>
 
 
-    <port>8881</port>
+    <port>8882</port>
     <applicationName>app-default-name</applicationName>
 
 </configuration>

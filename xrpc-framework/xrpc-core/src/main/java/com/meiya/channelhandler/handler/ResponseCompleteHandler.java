@@ -45,7 +45,7 @@ public class ResponseCompleteHandler extends SimpleChannelInboundHandler<XrpcRes
             log.info("id为【{}】的请求远程调用获取响应成功,即将返回调用结果给服务调用方！",xrpcResponse.getRequestId());
         }else if (responseCode == ResponseCode.SUCCESS_HEART_BEAT.getCode()){
             circuitBreaker.reportSuccess();
-            log.info("id为【{}】的心跳检测获取响应成功,即将返回给服务调用方！",xrpcResponse.getRequestId());
+            log.debug("id为【{}】的心跳检测获取响应成功,即将返回给服务调用方！",xrpcResponse.getRequestId());
         }else if (responseCode == ResponseCode.CURRENT_LIMIT.getCode()){
             log.warn("id为【{}】的请求远程调用被限流",xrpcResponse.getRequestId());
             circuitBreaker.reportFailure();

@@ -17,7 +17,7 @@ public class ProviderChannelInitializer extends ChannelInitializer<SocketChannel
         //服务提供方
         channel.pipeline()
                 //入站、出站处理器1 日志
-                .addLast(new LoggingHandler(LogLevel.INFO))
+                .addLast(new LoggingHandler(LogLevel.DEBUG))
                 //入站处理器2 请求解码
                 .addLast(new RequestDecodeHandler())
                 //入站处理器3 反射方法调用

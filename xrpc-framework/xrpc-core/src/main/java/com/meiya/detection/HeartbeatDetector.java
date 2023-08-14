@@ -76,7 +76,7 @@ public class HeartbeatDetector {
         @SneakyThrows
         @Override
         public void run() {
-            log.info("一次心跳检测开始");
+            log.debug("一次心跳检测开始");
             XrpcBootstrap.RESPONSE_TIME_CHANNEL_CACHE.clear();
             Map<InetSocketAddress, Channel> channelCache = XrpcBootstrap.CHANNEL_CACHE;
             for (Map.Entry<InetSocketAddress, Channel> entry : channelCache.entrySet()) {
@@ -101,7 +101,9 @@ public class HeartbeatDetector {
                     //对外暴露这个completableFuture
                     XrpcBootstrap.PENDING_REQUEST.put(request.getRequestId(), completableFuture);
                     channel.writeAndFlush(request);
-                    log.info("服务调用方,向【{}】主机发送了id为【{}】的心跳请求", entry.getKey(), request.getRequestId());
+                    if (log.isDebugEnabled()){
+                        log.debug("服务调用方,向【{}】主机发送了id为【{}】的心跳请求", entry.getKey(), request.getRequestId());
+                    }
                     try {
                         completableFuture.get(2, TimeUnit.SECONDS);
                         success = true;
@@ -119,7 +121,7 @@ public class HeartbeatDetector {
                     //3.2 一次响应的接收 结束计时
                     long end = System.currentTimeMillis();
                     long rtt = end - start;
-                    log.info("服务调用方心跳检测可用主机【{}】的响应时长为【{}】ms", entry.getKey(), rtt);
+                    log.debug("服务调用方心跳检测可用主机【{}】的响应时长为【{}】ms", entry.getKey(), rtt);
                     //3.3记录到treeMap中，方便取得最短响应主机
                     TreeMap<Long, List<Channel>> cache = XrpcBootstrap.RESPONSE_TIME_CHANNEL_CACHE;
                     if (cache.containsKey(rtt)) {
@@ -140,10 +142,10 @@ public class HeartbeatDetector {
                 Long time = entry.getKey();
                 List<Channel> channels = entry.getValue();
                 for (Channel channel : channels) {
-                    log.info("【{}】--->【{}】", channel.remoteAddress(), time);
+                    log.debug("【{}】--->【{}】", channel.remoteAddress(), time);
                 }
             }
-            log.info("一次心跳检测结束");
+            log.debug("一次心跳检测结束");
 
 
         }

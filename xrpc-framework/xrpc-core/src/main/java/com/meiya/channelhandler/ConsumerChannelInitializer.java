@@ -17,7 +17,7 @@ public class ConsumerChannelInitializer extends ChannelInitializer<SocketChannel
         //服务调用方
         channel.pipeline()
                 //出站、入站处理器1 日志
-                .addLast(new LoggingHandler(LogLevel.INFO))
+                .addLast(new LoggingHandler(LogLevel.DEBUG))
                 //入站处理器2 解析响应报文
                 .addLast(new ResponseDecodeHandler())
                 //入站处理器3 处理结果

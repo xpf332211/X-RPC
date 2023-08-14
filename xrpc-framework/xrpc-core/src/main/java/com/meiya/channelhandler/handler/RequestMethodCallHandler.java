@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.IllegalFormatCodePointException;
 
 /**
  * @author xiaopf
@@ -79,6 +80,7 @@ public class RequestMethodCallHandler extends SimpleChannelInboundHandler<XrpcRe
             //方法调用
             Object result = null;
             try{
+                //反射调用
                 result = callTargetMethod(requestPayload);
                 //处理成功状态码
                 responseCode = ResponseCode.SUCCESS.getCode();
@@ -101,7 +103,9 @@ public class RequestMethodCallHandler extends SimpleChannelInboundHandler<XrpcRe
 
         //7.写出响应
         channel.writeAndFlush(xrpcResponse).addListener(future -> {
-            log.info("服务提供方发送了id为【{}】的响应", requestId);
+            if(log.isDebugEnabled()){
+                log.debug("服务提供方发送了id为【{}】的响应", requestId);
+            }
         });
 
         //8.请求计数器 减一 并判断请求数是否为0了 若是则通知XrpcShutDownHook结束阻塞

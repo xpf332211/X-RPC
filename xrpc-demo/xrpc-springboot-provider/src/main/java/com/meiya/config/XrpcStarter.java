@@ -1,7 +1,10 @@
 package com.meiya.config;
 
+import com.meiya.bootstrap.ScanServiceStarter;
 import com.meiya.bootstrap.XrpcBootstrap;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -12,14 +15,9 @@ import java.io.UnsupportedEncodingException;
  */
 @Slf4j
 @Component
-public class XrpcStarter implements CommandLineRunner {
+public class XrpcStarter implements ApplicationRunner {
     @Override
-    public void run(String... args) throws Exception {
-        Thread.sleep(1000);
-        log.info("xrpc正在启动~");
-        XrpcBootstrap.getInstance()
-                .scan("com.meiya.service.impl")
-                .start();
-
+    public void run(ApplicationArguments args) throws Exception {
+        new ScanServiceStarter("com.meiya.service.impl").start();
     }
 }
