@@ -25,7 +25,12 @@
 
         <dependency>
             <groupId>com.meiya</groupId>
-            <artifactId>xrpc-framework</artifactId>
+            <artifactId>xrpc-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.meiya</groupId>
+            <artifactId>xrpc-core</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
