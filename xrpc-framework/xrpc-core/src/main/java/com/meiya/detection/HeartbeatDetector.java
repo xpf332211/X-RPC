@@ -5,6 +5,8 @@ import com.meiya.bootstrap.XrpcBootstrap;
 import com.meiya.compress.CompressorFactory;
 import com.meiya.enumeration.RequestType;
 import com.meiya.exceptions.DiscoveryException;
+import com.meiya.protection.CircuitBreaker;
+import com.meiya.protection.impl.StateCircuitBreaker;
 import com.meiya.serialize.SerializerFactory;
 import com.meiya.transport.message.XrpcRequest;
 import io.netty.bootstrap.Bootstrap;
@@ -80,6 +82,13 @@ public class HeartbeatDetector {
             for (Map.Entry<InetSocketAddress, Channel> entry : channelCache.entrySet()) {
                 InetSocketAddress address = entry.getKey();
                 Channel channel = entry.getValue();
+                //3.0 缓存熔断器 便于后续获取
+                Map<InetSocketAddress, CircuitBreaker> circuitBreakerCache = XrpcBootstrap.IP_CIRCUIT_BREAKER_CACHE;
+                CircuitBreaker circuitBreaker = circuitBreakerCache.get(address);
+                if (circuitBreaker == null){
+                    circuitBreaker = new StateCircuitBreaker(5, 2000);
+                    circuitBreakerCache.put(address,circuitBreaker);
+                }
                 //3.1 一次请求的发送 开始计时
                 long start = System.currentTimeMillis();
                 //重试机制

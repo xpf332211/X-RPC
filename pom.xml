@@ -17,6 +17,8 @@
         <module>xrpc-framework/xrpc-common</module>
         <module>xrpc-framework/xrpc-core</module>
         <module>xrpc-manager</module>
+        <module>xrpc-demo/xrpc-springboot-provider</module>
+        <module>xrpc-demo/xrpc-springboot-consumer</module>
 
     </modules>
 

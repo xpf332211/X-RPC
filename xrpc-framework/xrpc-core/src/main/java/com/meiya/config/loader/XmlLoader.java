@@ -40,7 +40,7 @@ public class XmlLoader {
             //1.创建一个document
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("application.xml");
+            InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("xrpc-application.xml");
             Document document = documentBuilder.parse(inputStream);
             //2.获取一个xpath解析器
             XPathFactory xPathFactory = XPathFactory.newInstance();
