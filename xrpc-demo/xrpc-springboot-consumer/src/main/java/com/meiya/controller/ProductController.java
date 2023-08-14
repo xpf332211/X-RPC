@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/product")
 public class ProductController {
-    @XrpcService(group = "primary2")
+    @XrpcService(group = "primary1")
     private ProductService productService;
     @GetMapping
     public String getProduct(){
