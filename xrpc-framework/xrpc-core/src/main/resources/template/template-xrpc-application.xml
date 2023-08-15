@@ -19,9 +19,7 @@
     <compressor class="com.meiya.compress.impl.GzipCompressor" name="gzip" num="4"/>
     <compressType>gzip</compressType>
 
-
-
-
-
+    <loadBalanceType>consistentHash</loadBalanceType>
+    <loadBalancer class="xx" name="xx" num="xx"/>
     <idGenerator class="com.meiya.utils.IdGenerator" dataCenterId="3" machineId="4"/>
 </configuration>

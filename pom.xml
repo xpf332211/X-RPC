@@ -35,6 +35,7 @@
         <logback-classic.version>1.4.7</logback-classic.version>
         <hessian.version>4.0.63</hessian.version>
         <fastjson2.version>2.0.33</fastjson2.version>
+        <snakeyaml.version>2.0</snakeyaml.version>
     </properties>
 
 <!--    公共依赖-->
@@ -103,6 +104,12 @@
                 <groupId>com.alibaba.fastjson2</groupId>
                 <artifactId>fastjson2</artifactId>
                 <version>${fastjson2.version}</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
             </dependency>
 
         </dependencies>

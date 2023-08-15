@@ -69,6 +69,9 @@ public class ResponseEncodeHandler extends MessageToByteEncoder<XrpcResponse> {
         byteBuf.writeInt(MessageFormatConstant.HEADER_LENGTH + bodyLength);
         //4.将写指针归位
         byteBuf.writerIndex(index);
-        log.info("id为【{}】的响应经过了报文封装",xrpcResponse.getRequestId());
+        if (xrpcResponse.getResponseCode() == ResponseCode.SUCCESS.getCode()){
+            log.info("id为【{}】的响应经过了报文封装",xrpcResponse.getRequestId());
+        }
+
     }
 }

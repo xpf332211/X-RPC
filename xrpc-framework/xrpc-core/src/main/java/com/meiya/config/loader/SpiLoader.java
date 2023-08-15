@@ -115,6 +115,9 @@ public class SpiLoader {
         //未获取到 创建并加入缓存
         String name = clazz.getName();
         List<String> implNames = SPI_CONTENT.get(name);
+        if (implNames == null){
+            return new ArrayList<>();
+        }
         impls = new ArrayList<>();
         for (String implName : implNames) {
             try {

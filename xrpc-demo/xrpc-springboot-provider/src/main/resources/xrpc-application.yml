@@ -1,0 +1,3 @@
+xrpc:
+  port: 8882
+  applicationName: dfn

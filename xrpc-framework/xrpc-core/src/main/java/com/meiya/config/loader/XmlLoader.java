@@ -41,6 +41,9 @@ public class XmlLoader {
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
             InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("xrpc-application.xml");
+            if (inputStream == null){
+                return;
+            }
             Document document = documentBuilder.parse(inputStream);
             //2.获取一个xpath解析器
             XPathFactory xPathFactory = XPathFactory.newInstance();
@@ -86,8 +89,10 @@ public class XmlLoader {
             configuration.setRegistry(configuration.getRegistryConfig().getRegistry());
 
 
+        }catch (IllegalArgumentException e){
+            log.warn(("未配置xml文件"));
         } catch (ParserConfigurationException | IOException | SAXException e) {
-            log.error("解析xml配置发生异常，采用默认配置", e);
+            log.warn("解析xml文件发生异常");
         }
     }
 

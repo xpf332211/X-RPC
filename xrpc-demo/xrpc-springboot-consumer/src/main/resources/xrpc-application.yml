@@ -1,0 +1,10 @@
+xrpc:
+  registryConfig:
+    connect: zookeeper://127.0.0.1:2181
+  serializeType: hessian
+  compressType: gzip
+  loadBalanceType: consistentHash
+  idGenerator:
+    class: com.meiya.utils.IdGenerator
+    dataCenterId: 4
+    machineId: 9
