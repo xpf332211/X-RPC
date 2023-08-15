@@ -15,9 +15,10 @@ import java.io.UnsupportedEncodingException;
  */
 @Slf4j
 @Component
-public class XrpcStarter implements ApplicationRunner {
+public class XrpcStarter implements CommandLineRunner {
+
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(String... args) throws Exception {
         new ScanServiceStarter("com.meiya.service.impl").start();
     }
 }

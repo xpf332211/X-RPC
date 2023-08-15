@@ -23,5 +23,6 @@ public class ScanServiceStarter {
         XrpcBootstrap.getInstance()
                 .scan(scanPackage)
                 .start();
+        log.info("xrpc启动完毕");
     }
 }
