@@ -18,9 +18,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class XrpcConfig implements BeanPostProcessor, ApplicationListener<ContextRefreshedEvent> {
 
+    /**
+     * 在bean初始化后进行增强
+     * @param bean bean实例
+     * @param beanName bean名称
+     * @return 增强bean
+     */
     @SneakyThrows
     @Override
-    //在bean初始化后增强
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         return RpcBeanFactory.getRpcBean(bean);
     }
