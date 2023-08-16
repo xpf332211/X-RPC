@@ -143,18 +143,19 @@ public class XrpcBootstrap {
                     .bind(configuration.getPort())
                     .sync();
             Channel channel = channelFuture.channel();
-            channel.closeFuture().sync();
+            channel.closeFuture().addListener(future -> {
+                log.info("服务端netty关闭");
+                try {
+                    boss.shutdownGracefully().sync();
+                    worker.shutdownGracefully().sync();
+                } catch (Exception e) {
+                    log.info("服务端netty优雅关闭时发生异常！");
+                    throw new NettyException(e);
+                }
+            });
         } catch (InterruptedException e) {
             log.info("服务端netty启动时发生异常!");
             throw new NettyException(e);
-        } finally {
-            try {
-                boss.shutdownGracefully().sync();
-                worker.shutdownGracefully().sync();
-            } catch (Exception e) {
-                log.info("服务端netty优雅关闭时发生异常！");
-                throw new NettyException(e);
-            }
         }
     }
 
@@ -294,8 +295,6 @@ public class XrpcBootstrap {
         //主机 去重
         addressList = new ArrayList<>(new HashSet<>(addressList));
         ALL_SERVICE_ADDRESS_LIST = addressList;
-        HeartbeatDetector.detect();
-
     }
 
 

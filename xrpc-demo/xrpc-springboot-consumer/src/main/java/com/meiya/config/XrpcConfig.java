@@ -1,9 +1,12 @@
 package com.meiya.config;
 
+import com.meiya.detection.HeartbeatDetector;
 import com.meiya.proxy.RpcBeanFactory;
 import lombok.SneakyThrows;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,12 +16,18 @@ import org.springframework.stereotype.Component;
  * @author xiaopengfei
  */
 @Component
-public class XrpcConfig implements BeanPostProcessor {
+public class XrpcConfig implements BeanPostProcessor, ApplicationListener<ContextRefreshedEvent> {
 
     @SneakyThrows
     @Override
     //在bean初始化后增强
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         return RpcBeanFactory.getRpcBean(bean);
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        //所有bean初始化完毕 开启心跳检测
+        HeartbeatDetector.detect();
     }
 }

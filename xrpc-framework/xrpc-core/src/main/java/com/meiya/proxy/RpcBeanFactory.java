@@ -1,6 +1,7 @@
 package com.meiya.proxy;
 
 import com.meiya.annotation.XrpcService;
+import com.meiya.detection.HeartbeatDetector;
 import com.meiya.exceptions.DiscoveryException;
 import lombok.extern.slf4j.Slf4j;
 

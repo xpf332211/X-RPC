@@ -1,6 +1,7 @@
 package com.meiya.utils;
 
 import com.meiya.utils.print.Out;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.atomic.LongAdder;
 
@@ -10,6 +11,7 @@ import java.util.concurrent.atomic.LongAdder;
  *
  * @author xiaopf
  */
+@Slf4j
 public class IdGenerator {
     /**
      * 起始时间戳
@@ -92,7 +94,20 @@ public class IdGenerator {
 
         //当前时间戳小于上一次的时间戳 进行了时钟回拨
         if (timestampAdderId.sum() < lastTimestampAdderId.sum()) {
-            throw new RuntimeException("系统进行了时钟回拨！");
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                log.error("时钟回拨延迟等待时发生了异常");
+            }
+            //一次重试 再次获取当前时间戳
+            this.timestampAdderId.reset();
+            this.timestampAdderId.add(System.currentTimeMillis() - START_TIMESTAMP);
+            //时间恢复 再次生成id 否则抛出异常
+            if (timestampAdderId.sum() > lastTimestampAdderId.sum()){
+                return getId();
+            }else {
+                throw new RuntimeException("系统进行了时钟回拨！");
+            }
             //同一时间戳 需要生成不同的序列号
         } else if (timestampAdderId.sum() == lastTimestampAdderId.sum()) {
             sequenceAdderId.increment();
