@@ -32,6 +32,7 @@ public class RequestDecodeHandler extends LengthFieldBasedFrameDecoder {
                 MessageFormatConstant.FULL_FIELD_BYTES,
                 //负载的适配长度（总长度字段的末尾位置）
                 -(MessageFormatConstant.FULL_FIELD_LOCATION + MessageFormatConstant.FULL_FIELD_BYTES),
+                //从头剥离几个字节（不解析的字段长度）
                 0
         );
     }

@@ -5,6 +5,7 @@ import com.meiya.bootstrap.XrpcBootstrap;
 import com.meiya.enumeration.RequestType;
 import com.meiya.enumeration.ResponseCode;
 import com.meiya.hook.ShutDownHolder;
+import com.meiya.hook.XrpcShutDownHook;
 import com.meiya.protection.CurrentLimiter;
 import com.meiya.protection.impl.TokenBucketCurrentLimiter;
 import com.meiya.transport.message.RequestPayload;
@@ -111,7 +112,7 @@ public class RequestMethodCallHandler extends SimpleChannelInboundHandler<XrpcRe
         //8.请求计数器 减一 并判断请求数是否为0了 若是则通知XrpcShutDownHook结束阻塞
         ShutDownHolder.REQUEST_COUNTER.decrement();
         if (ShutDownHolder.REQUEST_COUNTER.sum() == 0){
-            synchronized (this){
+            synchronized (XrpcShutDownHook.SHUT_DOWN_HOOK_LOCK){
                 notifyAll();
             }
         }
